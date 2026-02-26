@@ -20,7 +20,9 @@ const LessonCard: React.FC<LessonCardProps> = ({ resource, onView }) => {
     <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition-shadow group">
       <div className="relative h-48 overflow-hidden cursor-pointer" onClick={() => onView(resource)}>
         <img
-          src={resource.thumbnailUrl || `https://img.youtube.com/vi/${resource.referenceUrl?.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+          src={resource.thumbnailUrl || (resource.referenceUrl?.includes('youtube.com') || resource.referenceUrl?.includes('youtu.be')
+            ? `https://img.youtube.com/vi/${resource.referenceUrl.includes('v=') ? resource.referenceUrl.split('v=')[1].split('&')[0] : resource.referenceUrl.split('/').pop()}/hqdefault.jpg`
+            : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400')}
           alt={resource.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {

@@ -88,7 +88,9 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView }) => {
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-lg bg-stone-100 flex-shrink-0 overflow-hidden relative border border-stone-200 shadow-sm">
                                                 <img
-                                                    src={resource.thumbnailUrl || `https://img.youtube.com/vi/${resource.referenceUrl?.split('v=')[1]?.split('&')[0]}/hqdefault.jpg`}
+                                                    src={resource.thumbnailUrl || (resource.referenceUrl?.includes('youtube.com') || resource.referenceUrl?.includes('youtu.be')
+                                                        ? `https://img.youtube.com/vi/${resource.referenceUrl.includes('v=') ? resource.referenceUrl.split('v=')[1].split('&')[0] : resource.referenceUrl.split('/').pop()}/hqdefault.jpg`
+                                                        : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400')}
                                                     alt={resource.title}
                                                     className="w-full h-full object-cover"
                                                     onError={(e) => {
@@ -169,8 +171,8 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView }) => {
                                     key={i}
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(i + 1); }}
                                     className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${currentPage === i + 1
-                                            ? 'bg-orange-600 text-white shadow-sm'
-                                            : 'text-stone-600 hover:bg-stone-200'
+                                        ? 'bg-orange-600 text-white shadow-sm'
+                                        : 'text-stone-600 hover:bg-stone-200'
                                         }`}
                                 >
                                     {i + 1}
