@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactPlayer from 'react-player';
 import { Resource } from '../types';
+import AudioPlayer from './AudioPlayer';
 
 interface LessonDetailProps {
     resource: Resource;
@@ -27,21 +28,50 @@ const LessonDetail: React.FC<LessonDetailProps> = ({ resource, onBack }) => {
             <div className="flex-1 overflow-y-auto">
                 <div className="max-w-5xl mx-auto px-6 py-8">
 
-                    {/* Main Video Section */}
-                    <div className="aspect-video w-full bg-stone-900 rounded-2xl overflow-hidden shadow-2xl mb-8 relative">
-                        <ReactPlayer
-                            src={resource.referenceUrl}
-                            width="100%"
-                            height="100%"
-                            controls={true}
-                            playing={true}
-                            config={{
-                                youtube: {
-                                    playerVars: { showinfo: 1 }
-                                } as any
-                            }}
-                        />
-                    </div>
+                    {/* Main Media Section */}
+                    {resource.videoPath ? (
+                        <div className="aspect-video w-full bg-stone-900 rounded-2xl overflow-hidden shadow-2xl mb-8 relative border border-stone-800">
+                            <ReactPlayer
+                                src={resource.videoPath}
+                                width="100%"
+                                height="100%"
+                                controls={true}
+                                playing={true}
+                                config={{
+                                    youtube: {
+                                        playerVars: {
+                                            showinfo: 1,
+                                            autoplay: 1
+                                        }
+                                    } as any
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-full bg-gradient-to-br from-stone-900 to-stone-800 rounded-2xl overflow-hidden shadow-2xl mb-8 relative min-h-[320px] flex items-center justify-center p-8 border border-stone-800">
+                            <div className="absolute inset-0 opacity-30">
+                                <div className="absolute top-0 -left-10 w-72 h-72 bg-orange-600/20 rounded-full blur-3xl"></div>
+                                <div className="absolute bottom-0 -right-10 w-72 h-72 bg-stone-500/10 rounded-full blur-3xl"></div>
+                            </div>
+
+                            <div className="relative z-10 w-full max-w-xl text-center">
+                                <div className="mb-6 inline-flex items-center justify-center w-24 h-24 bg-orange-600/10 rounded-full border border-orange-500/30 text-orange-500 text-5xl animate-pulse shadow-[0_0_30px_rgba(234,88,12,0.2)]">
+                                    {resource.instrument?.toLowerCase().includes('mridanga') ? '🥁' :
+                                        resource.instrument?.toLowerCase().includes('harmonium') ? '🎹' :
+                                            resource.instrument?.toLowerCase().includes('karatal') ? '🔔' : '🎵'}
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-2">Audio Lesson</h2>
+                                <p className="text-stone-400 mb-8 italic text-sm">Follow the rhythm and practice along with this high-quality recording.</p>
+
+                                <div className="w-full">
+                                    <AudioPlayer
+                                        url={resource.audioPath || resource.referenceUrl}
+                                        title={resource.title}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         {/* Primary Content */}

@@ -45,6 +45,8 @@ const App: React.FC = () => {
             level: item.level,
             ragaTala: item.ragaTalaName,
             referenceUrl: item.videoPath || item.audioPath || '',
+            videoPath: item.videoPath,
+            audioPath: item.audioPath,
             thumbnailUrl: null, // Will be handled by LessonCard fallback
             mantra: item.beatSwara
           };

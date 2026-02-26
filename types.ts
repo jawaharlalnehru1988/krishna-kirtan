@@ -16,6 +16,8 @@ export interface Resource {
   level: Level | string;
   ragaTala?: string;
   referenceUrl: string;
+  videoPath?: string | null;
+  audioPath?: string | null;
   thumbnailUrl?: string; // Optional now, since API doesn't provide it
   mantra?: string;
 }
