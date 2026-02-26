@@ -12,7 +12,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart }) => {
       {/* Hero Section */}
       <section className="relative h-[500px] flex items-center justify-center overflow-hidden bg-stone-900">
         <img
-          src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=1200"
+          src="/banner.jpg"
           alt="Temple Background"
           className="absolute inset-0 w-full h-full object-cover opacity-40"
         />
@@ -60,7 +60,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart }) => {
             </p>
             <div className="flex items-center gap-4 pt-4">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Bhaktivedanta_Swami_Prabhupada_2.jpg"
+                src="/parbhupada.png"
                 alt="Srila Prabhupada"
                 className="w-16 h-16 rounded-full object-cover border-2 border-orange-200 p-0.5"
               />
@@ -74,24 +74,24 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <img
-                src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&q=80&w=400"
+                src="/Prabhupadamritanga.jpg"
                 alt="Radha Krishna"
                 className="w-full h-64 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
               />
               <img
-                src="https://images.unsplash.com/photo-1544211501-0c43057e0969?auto=format&fit=crop&q=80&w=400"
+                src="/lord caitanya.jpeg"
                 alt="Kirtan"
                 className="w-full h-80 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
               />
             </div>
             <div className="pt-8 space-y-4">
               <img
-                src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400"
+                src="/lordcaitanya.jpg"
                 alt="Harmonium"
                 className="w-full h-80 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
               />
               <img
-                src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=400"
+                src="/lordcaitanyamahaprabu.jpg"
                 alt="Karatal"
                 className="w-full h-64 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform"
               />

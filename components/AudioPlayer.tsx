@@ -9,7 +9,7 @@ interface AudioPlayerProps {
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
-    const [playing, setPlaying] = useState(false);
+    const [playing, setPlaying] = useState(true);
     const [duration, setDuration] = useState(0);
     const [played, setPlayed] = useState(0);
     const [seeking, setSeeking] = useState(false);

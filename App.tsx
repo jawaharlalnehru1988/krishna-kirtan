@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Category, Resource, NavItem } from './types';
-import LessonCard from './components/LessonCard';
+import LessonList from './components/LessonList';
 import LessonDetail from './components/LessonDetail';
 import HomeView from './components/HomeView';
+
+import { Menu, X } from 'lucide-react';
 
 const CATEGORY_ICONS: Record<string, string> = {
   mridanga: '🥁',
@@ -24,6 +26,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,18 +93,50 @@ const App: React.FC = () => {
 
   const handleLessonView = (resource: Resource) => {
     setActiveLesson(resource);
+    setIsSidebarOpen(false); // Close sidebar on mobile when selecting a lesson
   };
 
   const handleBackToLibrary = () => {
     setActiveLesson(null);
   };
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
-      {/* Sidebar */}
-      <aside className="w-full md:w-72 bg-white border-r border-stone-200 flex flex-col sticky top-0 h-auto md:h-screen z-20">
+    <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row relative">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
         <div
-          className="p-6 border-b border-stone-100 bg-orange-50/30 cursor-pointer"
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
+        >
+          <span className="text-xl">🪔</span>
+          <span className="font-bold text-orange-800 tracking-tight">Sri Krishna Kirtan</span>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 text-stone-600 hover:text-orange-600 transition-colors"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay (Mobile only) */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed inset-y-0 left-0 w-72 bg-white border-r border-stone-200 flex flex-col z-50 transition-transform duration-300 ease-in-out
+        md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div
+          className="p-6 border-b border-stone-100 bg-orange-50/30 hidden md:block"
           onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
         >
           <h1 className="text-2xl font-bold text-orange-800 tracking-tight flex items-center gap-2">
@@ -110,11 +145,25 @@ const App: React.FC = () => {
           <p className="text-xs text-stone-500 font-medium uppercase tracking-widest mt-1">Resource Library</p>
         </div>
 
+        {/* Brand for Mobile Sidebar specifically */}
+        <div className="md:hidden p-6 border-b border-stone-100 bg-orange-50/30 flex items-center justify-between">
+          <div>
+            <span className="font-bold text-orange-800">Resource Library</span>
+          </div>
+          <button onClick={() => setIsSidebarOpen(false)} className="text-stone-400">
+            <X size={20} />
+          </button>
+        </div>
+
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => { setActiveCategory(item.id); setActiveLesson(null); }}
+              onClick={() => {
+                setActiveCategory(item.id);
+                setActiveLesson(null);
+                setIsSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left ${activeCategory === item.id && !activeLesson
                 ? 'bg-orange-100 text-orange-800 font-bold shadow-sm'
                 : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
@@ -161,14 +210,8 @@ const App: React.FC = () => {
               ) : error ? (
                 <div className="text-center text-red-500 py-20">{error}</div>
               ) : filteredResources.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                  {filteredResources.map((resource) => (
-                    <LessonCard
-                      key={resource.id}
-                      resource={resource}
-                      onView={handleLessonView}
-                    />
-                  ))}
+                <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                  <LessonList resources={filteredResources} onView={handleLessonView} />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-stone-400 bg-white rounded-3xl border-2 border-dashed border-stone-200">
