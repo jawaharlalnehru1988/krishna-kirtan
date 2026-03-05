@@ -1,6 +1,5 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import ReactPlayer from 'react-player';
 import { Play, Pause, Download, Volume2, RotateCcw } from 'lucide-react';
 
 interface AudioPlayerProps {

@@ -1,12 +1,24 @@
 
 import React from 'react';
-import { Category } from '../types';
+import { Category, NavItem } from '../types';
 
 interface HomeViewProps {
   onStart: (category: Category) => void;
+  categories: NavItem[];
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ onStart }) => {
+const CATEGORY_DETAILS: Record<string, { desc: string }> = {
+  mridanga: { desc: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.' },
+  mritanga: { desc: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.' },
+  harmonium: { desc: 'Master the melodies and ragas that evoke deep devotion.' },
+  karatal: { desc: 'The golden rhythm that keeps the pace of every congregational chant.' },
+  kirtan: { desc: 'Sing the holy names and feel the transformation of your heart.' },
+  bhajans: { desc: 'Classical and traditional hymns composed by great Vaishnava saints.' },
+  raga: { desc: 'Explore the melodic frameworks that set the mood for worship.' },
+  default: { desc: 'Structured lessons and reference guides for your devotional journey.' }
+};
+
+const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Hero Section */}
@@ -27,7 +39,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart }) => {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              onClick={() => onStart('mridanga')}
+              onClick={() => onStart(categories[0]?.id || 'kirtan')}
               className="px-8 py-3 bg-orange-600 text-white rounded-full font-bold text-lg hover:bg-orange-700 transition-all hover:scale-105 shadow-xl"
             >
               Start Learning
@@ -104,24 +116,24 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart }) => {
       <section className="py-20 px-6 bg-stone-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-stone-900 mb-4">Choose Your Instrument</h2>
-            <p className="text-stone-500 max-w-2xl mx-auto">Select a path to begin your training with structured lessons, mantras, and reference guides.</p>
+            <h2 className="text-4xl font-bold text-stone-900 mb-4">Choose Your Path</h2>
+            <p className="text-stone-500 max-w-2xl mx-auto">Select a category to begin your training with structured lessons, mantras, and reference guides.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { id: 'mridanga', name: 'Mridanga', desc: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.', icon: '🥁' },
-              { id: 'harmonium', name: 'Harmonium', desc: 'Master the melodies and ragas that evoke deep devotion.', icon: '🎹' },
-              { id: 'karatal', name: 'Karatal', desc: 'The golden rhythm that keeps the pace of every congregational chant.', icon: '🔔' }
-            ].map((inst) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((cat) => (
               <button
-                key={inst.id}
-                onClick={() => onStart(inst.id as Category)}
+                key={cat.id}
+                onClick={() => onStart(cat.id as Category)}
                 className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100 text-left hover:shadow-xl transition-all group"
               >
-                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform inline-block">{inst.icon}</div>
-                <h3 className="text-2xl font-bold text-stone-900 mb-2">{inst.name}</h3>
-                <p className="text-stone-600 mb-6">{inst.desc}</p>
+                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform inline-block">
+                  {cat.icon || '🪔'}
+                </div>
+                <h3 className="text-2xl font-bold text-stone-900 mb-2 capitalize">{cat.label}</h3>
+                <p className="text-stone-600 mb-6">
+                  {CATEGORY_DETAILS[cat.id.toLowerCase()]?.desc || CATEGORY_DETAILS.default.desc}
+                </p>
                 <span className="text-orange-600 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
                   Start Learning ➔
                 </span>

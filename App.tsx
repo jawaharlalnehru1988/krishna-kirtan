@@ -31,29 +31,24 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('https://api.askharekrishna.com/api/v1/kirtans');
+        const response = await axios.get('https://api.askharekrishna.com/api/v1/kirtans/');
         const data = response.data;
 
         // Transform API data to Resource type
-        const fetchedResources: Resource[] = data.map((item: any) => {
-          let category = item.category.toLowerCase();
-          if (category === 'mritanga') category = 'mridanga'; // Fix typo from API
-
-          return {
-            id: item.id,
-            category: category,
-            title: item.title,
-            description: item.description,
-            instrument: item.category, // Use original category name for instrument display
-            level: item.level,
-            ragaTala: item.ragaTalaName,
-            referenceUrl: item.videoPath || item.audioPath || '',
-            videoPath: item.videoPath,
-            audioPath: item.audioPath,
-            thumbnailUrl: null, // Will be handled by LessonCard fallback
-            mantra: item.beatSwara
-          };
-        });
+        const fetchedResources: Resource[] = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          category: item.category,
+          authorName: item.authorName || '',
+          description: item.description || '',
+          tamilLyrics: item.tamilLyrics || '',
+          englishLyrics: item.englishLyrics || '',
+          audioPath: item.audioPath,
+          imagePath: item.imagePath,
+          videoPath: item.videoPath,
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        }));
 
         setResources(fetchedResources);
 
@@ -64,8 +59,8 @@ const App: React.FC = () => {
           { id: 'home', label: 'Home', icon: '🏠' },
           ...uniqueCategories.map(cat => ({
             id: cat,
-            label: cat.charAt(0).toUpperCase() + cat.slice(1), // Capitalize label
-            icon: CATEGORY_ICONS[cat] || CATEGORY_ICONS['default']
+            label: cat, // Use category as label
+            icon: CATEGORY_ICONS[cat.toLowerCase()] || CATEGORY_ICONS['default']
           }))
         ];
 
@@ -73,7 +68,7 @@ const App: React.FC = () => {
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError("Failed to load lessons. Please try again later.");
+        setError("Failed to load kirtans. Please try again later.");
         setLoading(false);
       }
     };
@@ -85,7 +80,9 @@ const App: React.FC = () => {
     return resources.filter(res =>
       res.category === activeCategory &&
       (res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        res.tamilLyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        res.englishLyrics.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [activeCategory, searchQuery, resources]);
 
@@ -181,7 +178,10 @@ const App: React.FC = () => {
         {activeLesson ? (
           <LessonDetail resource={activeLesson} onBack={handleBackToLibrary} />
         ) : activeCategory === 'home' ? (
-          <HomeView onStart={setActiveCategory} />
+          <HomeView
+            onStart={setActiveCategory}
+            categories={navItems.filter(item => item.id !== 'home')}
+          />
         ) : (
           <>
             <header className="sticky top-0 bg-stone-50/80 backdrop-blur-md z-10 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

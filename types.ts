@@ -1,29 +1,23 @@
 
-export type Category = string;
-
-export enum Level {
-  Beginner = 'beginner',
-  Intermediate = 'intermediate',
-  Advanced = 'advanced'
-}
-
 export interface Resource {
-  id: number; // API uses number
-  category: string;
+  id: number;
   title: string;
+  category: string;
+  authorName: string;
   description: string;
-  instrument?: string;
-  level: Level | string;
-  ragaTala?: string;
-  referenceUrl: string;
-  videoPath?: string | null;
-  audioPath?: string | null;
-  thumbnailUrl?: string; // Optional now, since API doesn't provide it
-  mantra?: string;
+  tamilLyrics: string;
+  englishLyrics: string;
+  audioPath: string | null;
+  imagePath: string | null;
+  videoPath: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface NavItem {
   id: string;
   label: string;
-  icon?: string; // Optional, API doesn't provide icons
+  icon?: string;
 }
+
+export type Category = string;
