@@ -2,25 +2,56 @@
 import React from 'react';
 import _ReactPlayer from 'react-player';
 const ReactPlayer = _ReactPlayer as any;
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Resource } from '../types';
 import AudioPlayer from './AudioPlayer';
 
 interface LessonDetailProps {
     resource: Resource;
     onBack: () => void;
+    onNext: () => void;
+    onPrevious: () => void;
+    hasNext: boolean;
+    hasPrevious: boolean;
 }
 
-const LessonDetail: React.FC<LessonDetailProps> = ({ resource, onBack }) => {
+const LessonDetail: React.FC<LessonDetailProps> = ({
+    resource,
+    onBack,
+    onNext,
+    onPrevious,
+    hasNext,
+    hasPrevious
+}) => {
     return (
         <div className="flex flex-col h-full bg-white relative">
             {/* Header / Back Button */}
-            <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-stone-200 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-6 py-4 flex items-center justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 text-stone-600 hover:text-orange-600 transition-colors font-medium"
+                    className="flex items-center gap-2 text-stone-600 hover:text-orange-600 transition-colors font-medium group"
                 >
-                    ← Back to Library
+                    <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Library
                 </button>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onPrevious}
+                        disabled={!hasPrevious}
+                        className="p-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-orange-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        title="Previous Lesson"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <button
+                        onClick={onNext}
+                        disabled={!hasNext}
+                        className="p-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-orange-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        title="Next Lesson"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -36,6 +67,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({ resource, onBack }) => {
                                     height="100%"
                                     controls={true}
                                     playing={true}
+                                    onEnded={onNext}
                                     config={{
                                         youtube: {
                                             playerVars: {
@@ -78,6 +110,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({ resource, onBack }) => {
                                     <AudioPlayer
                                         url={resource.audioPath || ''}
                                         title={resource.title}
+                                        onEnded={onNext}
                                     />
                                 </div>
                             </div>

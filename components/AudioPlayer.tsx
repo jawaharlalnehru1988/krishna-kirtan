@@ -5,9 +5,10 @@ import { Play, Pause, Download, Volume2, RotateCcw } from 'lucide-react';
 interface AudioPlayerProps {
     url: string;
     title?: string;
+    onEnded?: () => void;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
     const [playing, setPlaying] = useState(true);
     const [duration, setDuration] = useState(0);
     const [played, setPlayed] = useState(0);
@@ -16,6 +17,12 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
     const [loading, setLoading] = useState(true);
 
     const audioRef = useRef<HTMLAudioElement>(null);
+
+    useEffect(() => {
+        setLoading(true);
+        setPlayed(0);
+        setPlaying(true);
+    }, [url]);
 
     useEffect(() => {
         if (audioRef.current) {
@@ -35,7 +42,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
         } else {
             audio.pause();
         }
-    }, [playing]);
+    }, [playing, url]);
 
     const handlePlayPause = () => setPlaying(!playing);
 
@@ -72,6 +79,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
             audioRef.current.currentTime = time;
             setPlayed(value);
         }
+    };
+
+    const handleAudioEnded = () => {
+        setPlaying(false);
+        if (onEnded) onEnded();
     };
 
     const formatTime = (seconds: number) => {
@@ -116,7 +128,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
                 src={url}
                 onTimeUpdate={onTimeUpdate}
                 onLoadedMetadata={onLoadedMetadata}
-                onEnded={() => setPlaying(false)}
+                onEnded={handleAudioEnded}
                 onWaiting={() => setLoading(true)}
                 onPlaying={() => setLoading(false)}
                 preload="auto"

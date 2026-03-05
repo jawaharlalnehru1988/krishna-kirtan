@@ -88,6 +88,26 @@ const App: React.FC = () => {
 
   const activeNavItem = navItems.find(item => item.id === activeCategory);
 
+  const handleNextLesson = () => {
+    if (!activeLesson) return;
+    const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
+    if (currentIndex < filteredResources.length - 1) {
+      setActiveLesson(filteredResources[currentIndex + 1]);
+    }
+  };
+
+  const handlePreviousLesson = () => {
+    if (!activeLesson) return;
+    const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
+    if (currentIndex > 0) {
+      setActiveLesson(filteredResources[currentIndex - 1]);
+    }
+  };
+
+  const currentIndex = activeLesson ? filteredResources.findIndex(r => r.id === activeLesson.id) : -1;
+  const hasNext = activeLesson ? currentIndex < filteredResources.length - 1 : false;
+  const hasPrevious = activeLesson ? currentIndex > 0 : false;
+
   const handleLessonView = (resource: Resource) => {
     setActiveLesson(resource);
     setIsSidebarOpen(false); // Close sidebar on mobile when selecting a lesson
@@ -133,7 +153,7 @@ const App: React.FC = () => {
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div
-          className="p-6 border-b border-stone-100 bg-orange-50/30 hidden md:block"
+          className="p-6 border-b border-stone-100 bg-orange-50/30 hidden md:block cursor-pointer"
           onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
         >
           <h1 className="text-2xl font-bold text-orange-800 tracking-tight flex items-center gap-2">
@@ -144,7 +164,7 @@ const App: React.FC = () => {
 
         {/* Brand for Mobile Sidebar specifically */}
         <div className="md:hidden p-6 border-b border-stone-100 bg-orange-50/30 flex items-center justify-between">
-          <div>
+          <div className="cursor-pointer" onClick={() => { setActiveCategory('home'); setActiveLesson(null); setIsSidebarOpen(false); }}>
             <span className="font-bold text-orange-800">Resource Library</span>
           </div>
           <button onClick={() => setIsSidebarOpen(false)} className="text-stone-400">
@@ -176,7 +196,14 @@ const App: React.FC = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-y-auto h-screen relative">
         {activeLesson ? (
-          <LessonDetail resource={activeLesson} onBack={handleBackToLibrary} />
+          <LessonDetail
+            resource={activeLesson}
+            onBack={handleBackToLibrary}
+            onNext={handleNextLesson}
+            onPrevious={handlePreviousLesson}
+            hasNext={hasNext}
+            hasPrevious={hasPrevious}
+          />
         ) : activeCategory === 'home' ? (
           <HomeView
             onStart={setActiveCategory}
