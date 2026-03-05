@@ -7,15 +7,11 @@ interface HomeViewProps {
   categories: NavItem[];
 }
 
-const CATEGORY_DETAILS: Record<string, { desc: string }> = {
-  mridanga: { desc: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.' },
-  mritanga: { desc: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.' },
-  harmonium: { desc: 'Master the melodies and ragas that evoke deep devotion.' },
-  karatal: { desc: 'The golden rhythm that keeps the pace of every congregational chant.' },
-  kirtan: { desc: 'Sing the holy names and feel the transformation of your heart.' },
-  bhajans: { desc: 'Classical and traditional hymns composed by great Vaishnava saints.' },
-  raga: { desc: 'Explore the melodic frameworks that set the mood for worship.' },
-  default: { desc: 'Structured lessons and reference guides for your devotional journey.' }
+const CATEGORY_FALLBACK_DESCRIPTIONS: Record<string, string> = {
+  mridanga: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.',
+  harmonium: 'Master the melodies and ragas that evoke deep devotion.',
+  karatal: 'The golden rhythm that keeps the pace of every congregational chant.',
+  default: 'Explore our collection of devotional lessons and kirtans.'
 };
 
 const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
@@ -125,18 +121,29 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
               <button
                 key={cat.id}
                 onClick={() => onStart(cat.id as Category)}
-                className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100 text-left hover:shadow-xl transition-all group"
+                className="group relative h-80 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-stone-100 text-left"
               >
-                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform inline-block">
-                  {cat.icon || '🪔'}
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <img
+                    src={cat.image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600'}
+                    alt={cat.label}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 group-hover:from-orange-950/90 transition-colors"></div>
                 </div>
-                <h3 className="text-2xl font-bold text-stone-900 mb-2 capitalize">{cat.label}</h3>
-                <p className="text-stone-600 mb-6">
-                  {CATEGORY_DETAILS[cat.id.toLowerCase()]?.desc || CATEGORY_DETAILS.default.desc}
-                </p>
-                <span className="text-orange-600 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
-                  Start Learning ➔
-                </span>
+
+                {/* Content Overlay */}
+                <div className="relative h-full p-8 flex flex-col justify-end">
+
+                  <h3 className="text-2xl font-bold text-white mb-2 capitalize">{cat.label}</h3>
+                  <p className="text-stone-300 text-sm mb-6 line-clamp-2 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                    {CATEGORY_FALLBACK_DESCRIPTIONS[cat.id.toLowerCase()] || CATEGORY_FALLBACK_DESCRIPTIONS.default}
+                  </p>
+                  <span className="text-orange-400 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                    Start Learning ➔
+                  </span>
+                </div>
               </button>
             ))}
           </div>

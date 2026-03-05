@@ -31,11 +31,16 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('https://api.askharekrishna.com/api/v1/kirtans/');
-        const data = response.data;
+        const [kirtansResponse, categoriesResponse] = await Promise.all([
+          axios.get('https://api.askharekrishna.com/api/v1/kirtans/'),
+          axios.get('https://api.askharekrishna.com/api/v1/kirtan-categories/')
+        ]);
+
+        const kirtansData = kirtansResponse.data;
+        const categoriesData = categoriesResponse.data;
 
         // Transform API data to Resource type
-        const fetchedResources: Resource[] = data.map((item: any) => ({
+        const fetchedResources: Resource[] = kirtansData.map((item: any) => ({
           id: item.id,
           title: item.title,
           category: item.category,
@@ -52,15 +57,14 @@ const App: React.FC = () => {
 
         setResources(fetchedResources);
 
-        // Extract unique categories for sidebar
-        const uniqueCategories = Array.from(new Set(fetchedResources.map(r => r.category)));
-
+        // Build navigation items from categories API
         const dynamicNavItems: NavItem[] = [
           { id: 'home', label: 'Home', icon: '🏠' },
-          ...uniqueCategories.map(cat => ({
-            id: cat,
-            label: cat, // Use category as label
-            icon: CATEGORY_ICONS[cat.toLowerCase()] || CATEGORY_ICONS['default']
+          ...categoriesData.map((cat: any) => ({
+            id: cat.name, // Use name as ID to match resource.category
+            label: cat.name,
+            image: cat.categoryImage,
+            icon: CATEGORY_ICONS[cat.name.toLowerCase()] || CATEGORY_ICONS['default']
           }))
         ];
 
@@ -68,7 +72,7 @@ const App: React.FC = () => {
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError("Failed to load kirtans. Please try again later.");
+        setError("Failed to load content. Please try again later.");
         setLoading(false);
       }
     };
@@ -78,7 +82,7 @@ const App: React.FC = () => {
 
   const filteredResources = useMemo(() => {
     return resources.filter(res =>
-      res.category === activeCategory &&
+      res.category.toLowerCase() === activeCategory.toLowerCase() &&
       (res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         res.tamilLyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -186,7 +190,13 @@ const App: React.FC = () => {
                 : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
                 }`}
             >
-              <span className="text-xl">{item.icon}</span>
+              <div className="w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
+                {item.image ? (
+                  <img src={item.image} alt={item.label} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xl">{item.icon}</span>
+                )}
+              </div>
               <span className="text-sm">{item.label}</span>
             </button>
           ))}
@@ -255,6 +265,7 @@ const App: React.FC = () => {
             </section>
           </>
         )}
+
 
         {/* Footer - Only show on home or list view, arguably could be in detail too but cleaner without */}
         {!activeLesson && (

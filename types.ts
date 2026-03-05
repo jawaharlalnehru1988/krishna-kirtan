@@ -14,10 +14,19 @@ export interface Resource {
   updated_at: string;
 }
 
+export interface KirtanCategory {
+  id: number;
+  name: string;
+  categoryImage: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NavItem {
   id: string;
   label: string;
   icon?: string;
+  image?: string;
 }
 
 export type Category = string;
