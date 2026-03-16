@@ -148,6 +148,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
         if (isRepeat && audioRef.current) {
             audioRef.current.currentTime = 0;
             audioRef.current.play();
+        } else if (onNext) {
+            onNext();
         } else {
             setPlaying(false);
             if (onEnded) onEnded();
