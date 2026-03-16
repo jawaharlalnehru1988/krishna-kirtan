@@ -1,15 +1,21 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Download, Volume2, RotateCcw } from 'lucide-react';
+import { Play, Pause, Download, Volume2, RotateCcw, Repeat, SkipBack, SkipForward } from 'lucide-react';
+
+import { Resource } from '../types';
 
 interface AudioPlayerProps {
     url: string;
     title?: string;
     onEnded?: () => void;
+    onNext?: () => void;
+    onPrevious?: () => void;
+    resource?: Resource;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, onPrevious, resource }) => {
     const [playing, setPlaying] = useState(true);
+    const [isRepeat, setIsRepeat] = useState(false);
     const [duration, setDuration] = useState(0);
     const [played, setPlayed] = useState(0);
     const [seeking, setSeeking] = useState(false);
@@ -43,6 +49,63 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
             audio.pause();
         }
     }, [playing, url]);
+
+    // Media Session API Support
+    useEffect(() => {
+        if (!('mediaSession' in navigator)) return;
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: title || resource?.title || 'Sri Krishna Kirtan',
+            artist: resource?.authorName || 'Sri Krishna Kirtan',
+            album: resource?.category || 'Kirtan Academy',
+            artwork: [
+                { src: resource?.imagePath || 'https://raw.githubusercontent.com/jawaharlalnehru1988/krishna-kirtan/main/public/logo192.png', sizes: '96x96', type: 'image/png' },
+                { src: resource?.imagePath || 'https://raw.githubusercontent.com/jawaharlalnehru1988/krishna-kirtan/main/public/logo512.png', sizes: '128x128', type: 'image/png' },
+                { src: resource?.imagePath || 'https://raw.githubusercontent.com/jawaharlalnehru1988/krishna-kirtan/main/public/logo512.png', sizes: '192x192', type: 'image/png' },
+                { src: resource?.imagePath || 'https://raw.githubusercontent.com/jawaharlalnehru1988/krishna-kirtan/main/public/logo512.png', sizes: '256x256', type: 'image/png' },
+                { src: resource?.imagePath || 'https://raw.githubusercontent.com/jawaharlalnehru1988/krishna-kirtan/main/public/logo512.png', sizes: '384x384', type: 'image/png' },
+                { src: resource?.imagePath || 'https://raw.githubusercontent.com/jawaharlalnehru1988/krishna-kirtan/main/public/logo512.png', sizes: '512x512', type: 'image/png' },
+            ]
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => setPlaying(true));
+        navigator.mediaSession.setActionHandler('pause', () => setPlaying(false));
+        navigator.mediaSession.setActionHandler('seekbackward', () => {
+            if (audioRef.current) audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+        });
+        navigator.mediaSession.setActionHandler('seekforward', () => {
+            if (audioRef.current) audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, audioRef.current.duration);
+        });
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            if (onPrevious) {
+                onPrevious();
+            } else if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+            }
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            if (onNext) {
+                onNext();
+            } else if (onEnded) {
+                onEnded();
+            }
+        });
+
+        return () => {
+            navigator.mediaSession.setActionHandler('play', null);
+            navigator.mediaSession.setActionHandler('pause', null);
+            navigator.mediaSession.setActionHandler('seekbackward', null);
+            navigator.mediaSession.setActionHandler('seekforward', null);
+            navigator.mediaSession.setActionHandler('previoustrack', null);
+            navigator.mediaSession.setActionHandler('nexttrack', null);
+        };
+    }, [url, title, resource, onEnded, onNext, onPrevious]);
+
+    // Update playback state for Media Session
+    useEffect(() => {
+        if (!('mediaSession' in navigator)) return;
+        navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+    }, [playing]);
 
     const handlePlayPause = () => setPlaying(!playing);
 
@@ -82,9 +145,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
     };
 
     const handleAudioEnded = () => {
-        setPlaying(false);
-        if (onEnded) onEnded();
+        if (isRepeat && audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play();
+        } else {
+            setPlaying(false);
+            if (onEnded) onEnded();
+        }
     };
+
+    const handleRepeatToggle = () => setIsRepeat(!isRepeat);
 
     const formatTime = (seconds: number) => {
         if (typeof seconds !== 'number' || isNaN(seconds)) return '0:00';
@@ -165,8 +235,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
                 </div>
 
                 {/* Controls Section */}
-                <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col items-center gap-6">
+                    {/* Primary Playback Controls */}
+                    <div className="flex items-center gap-4 sm:gap-8">
                         <button
                             onClick={() => { if (audioRef.current) audioRef.current.currentTime = 0; setPlayed(0); }}
                             className="p-2 text-stone-400 hover:text-white transition-colors"
@@ -176,22 +247,51 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
                         </button>
 
                         <button
+                            onClick={onPrevious}
+                            disabled={!onPrevious}
+                            className="p-2 text-stone-400 hover:text-white transition-colors disabled:opacity-20"
+                            title="Previous Lesson"
+                        >
+                            <SkipBack size={24} fill="currentColor" />
+                        </button>
+
+                        <button
                             onClick={handlePlayPause}
-                            className="w-14 h-14 bg-orange-600 hover:bg-orange-500 text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg shadow-orange-900/20 disabled:opacity-50"
+                            className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-600 hover:bg-orange-500 text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-900/40 disabled:opacity-50"
                             disabled={loading && played === 0}
                         >
                             {loading && played === 0 ? (
-                                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : playing ? (
-                                <Pause fill="white" size={24} />
+                                <Pause fill="white" size={32} />
                             ) : (
-                                <Play fill="white" className="ml-1" size={24} />
+                                <Play fill="white" className="ml-1" size={32} />
                             )}
                         </button>
 
-                        <div className="flex items-center gap-2 group ml-2">
+                        <button
+                            onClick={onNext}
+                            disabled={!onNext}
+                            className="p-2 text-stone-400 hover:text-white transition-colors disabled:opacity-20"
+                            title="Next Lesson"
+                        >
+                            <SkipForward size={24} fill="currentColor" />
+                        </button>
+
+                        <button
+                            onClick={handleRepeatToggle}
+                            className={`p-2 transition-colors ${isRepeat ? 'text-orange-500' : 'text-stone-400 hover:text-white'}`}
+                            title={isRepeat ? "Disable Repeat" : "Enable Repeat"}
+                        >
+                            <Repeat size={20} className={isRepeat ? 'drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]' : ''} />
+                        </button>
+                    </div>
+
+                    {/* Volume and Utilities Row */}
+                    <div className="flex flex-wrap items-center justify-center gap-8 w-full border-t border-white/5 pt-4">
+                        <div className="flex items-center gap-3 group">
                             <Volume2 size={18} className="text-stone-400" />
-                            <div className="w-16 h-1 bg-stone-700 rounded-full relative overflow-hidden">
+                            <div className="w-24 sm:w-32 h-1.5 bg-stone-700 rounded-full relative overflow-hidden">
                                 <input
                                     type="range"
                                     min={0}
@@ -202,20 +302,20 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded }) => {
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div
-                                    className="absolute top-0 left-0 h-full bg-stone-400"
+                                    className="absolute top-0 left-0 h-full bg-orange-500/60"
                                     style={{ width: `${volume * 100}%` }}
                                 ></div>
                             </div>
                         </div>
-                    </div>
 
-                    <button
-                        onClick={handleDownload}
-                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-full text-sm font-semibold transition-all border border-white/10 group"
-                    >
-                        <Download size={16} className="group-hover:translate-y-0.5 transition-transform" />
-                        <span>Download</span>
-                    </button>
+                        <button
+                            onClick={handleDownload}
+                            className="flex items-center gap-2 px-6 py-2 bg-white/5 hover:bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-white/10 group active:scale-95"
+                        >
+                            <Download size={16} className="group-hover:translate-y-0.5 transition-transform" />
+                            <span className="hidden sm:inline">Download Audio</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

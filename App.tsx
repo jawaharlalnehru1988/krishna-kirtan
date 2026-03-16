@@ -28,6 +28,50 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Sync state FROM URL on initial load and popstate
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const category = params.get('category') as Category || 'home';
+      const lessonId = params.get('lesson');
+
+      setActiveCategory(category);
+      
+      if (lessonId && resources.length > 0) {
+        const lesson = resources.find(r => r.id.toString() === lessonId);
+        setActiveLesson(lesson || null);
+      } else {
+        setActiveLesson(null);
+      }
+    };
+
+    // Initial sync once resources are loaded
+    if (!loading && resources.length > 0) {
+      handlePopState();
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [loading, resources]);
+
+  // Sync state TO URL
+  useEffect(() => {
+    if (loading) return;
+
+    const params = new URLSearchParams();
+    if (activeCategory !== 'home') {
+      params.set('category', activeCategory);
+    }
+    if (activeLesson) {
+      params.set('lesson', activeLesson.id.toString());
+    }
+
+    const newSearch = params.toString() ? `?${params.toString()}` : '';
+    if (window.location.search !== newSearch) {
+      window.history.pushState(null, '', window.location.pathname + newSearch);
+    }
+  }, [activeCategory, activeLesson, loading]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -131,7 +175,7 @@ const App: React.FC = () => {
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
         >
-          <span className="text-xl">🪔</span>
+          <img src="/lord caitanya.jpeg" alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
           <span className="font-bold text-orange-800 tracking-tight">Sri Krishna Kirtan</span>
         </div>
         <button
@@ -161,7 +205,7 @@ const App: React.FC = () => {
           onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
         >
           <h1 className="text-2xl font-bold text-orange-800 tracking-tight flex items-center gap-2">
-            🪔 <span className="playfair">Sri Krishna Kirtan</span>
+            <img src="/lord caitanya.jpeg" alt="Logo" className="w-10 h-10 rounded-xl object-cover" /> <span className="playfair">Sri Krishna Kirtan</span>
           </h1>
           <p className="text-xs text-stone-500 font-medium uppercase tracking-widest mt-1">Resource Library</p>
         </div>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import _ReactPlayer from 'react-player';
 const ReactPlayer = _ReactPlayer as any;
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -23,6 +23,12 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     hasNext,
     hasPrevious
 }) => {
+    const [activeTab, setActiveTab] = useState<'tamil' | 'english'>(
+        resource.tamilLyrics ? 'tamil' : 'english'
+    );
+
+    const hasBothLyrics = resource.tamilLyrics && resource.englishLyrics;
+
     return (
         <div className="flex flex-col h-full bg-white relative">
             {/* Header / Back Button */}
@@ -100,17 +106,26 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                             <div className="relative z-10 w-full max-w-xl text-center">
                                 {resource.imagePath && (
                                     <div className="mb-6 inline-flex items-center justify-center w-32 h-32 rounded-2xl overflow-hidden border-2 border-orange-500/50 shadow-[0_0_30px_rgba(234,88,12,0.3)]">
-                                        <img src={resource.imagePath} alt={resource.title} className="w-full h-full object-cover" />
+                                        <img src={resource?.imagePath} alt={resource?.title} className="w-full h-full object-cover" />
                                     </div>
                                 )}
-                                <h2 className="text-2xl font-bold text-white mb-2">Kirtan Audio</h2>
-                                <p className="text-stone-400 mb-8 italic text-sm">Listen and practice this devotional kirtan.</p>
+                                <h2 className="text-2xl font-bold text-white mb-2">{resource?.title || 'Kirtan Audio'}</h2>
+                                <p className="text-stone-400 mb-8 italic text-sm line-clamp-1">
+                                    {resource?.description
+                                        ? (resource.description.length > 40
+                                            ? `${resource.description.substring(0, 40)}...`
+                                            : resource.description)
+                                        : 'Listen and practice this devotional kirtan.'}
+                                </p>
 
                                 <div className="w-full">
                                     <AudioPlayer
                                         url={resource.audioPath || ''}
                                         title={resource.title}
                                         onEnded={onNext}
+                                        onNext={onNext}
+                                        onPrevious={onPrevious}
+                                        resource={resource}
                                     />
                                 </div>
                             </div>
@@ -145,28 +160,53 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
 
                             {/* Lyrics Section */}
                             {(resource.tamilLyrics || resource.englishLyrics) && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-                                    {resource.tamilLyrics && (
-                                        <div className="bg-white p-8 rounded-3xl border border-orange-100 shadow-sm">
-                                            <h3 className="text-2xl font-bold text-orange-900 mb-6 flex items-center gap-2">
-                                                🕉️ தமிழ் வரிகள்
-                                            </h3>
-                                            <p className="text-xl leading-relaxed text-stone-800 whitespace-pre-line font-medium break-words">
-                                                {resource.tamilLyrics}
-                                            </p>
+                                <div className="mt-12">
+                                    {hasBothLyrics && (
+                                        <div className="flex p-1 bg-stone-100 rounded-2xl mb-6 w-fit border border-stone-200">
+                                            <button
+                                                onClick={() => setActiveTab('tamil')}
+                                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'tamil'
+                                                    ? 'bg-white text-orange-800 shadow-sm'
+                                                    : 'text-stone-500 hover:text-stone-800'
+                                                    }`}
+                                            >
+                                                🕉️ தமிழ்
+                                            </button>
+                                            <button
+                                                onClick={() => setActiveTab('english')}
+                                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'english'
+                                                    ? 'bg-white text-orange-800 shadow-sm'
+                                                    : 'text-stone-500 hover:text-stone-800'
+                                                    }`}
+                                            >
+                                                🙌 English
+                                            </button>
                                         </div>
                                     )}
 
-                                    {resource.englishLyrics && (
-                                        <div className="bg-stone-50 p-8 rounded-3xl border border-stone-200 shadow-sm">
-                                            <h3 className="text-2xl font-bold text-stone-800 mb-6 flex items-center gap-2">
-                                                🙌 English Lyrics
-                                            </h3>
-                                            <p className="text-lg leading-relaxed text-stone-700 whitespace-pre-line break-words italic">
-                                                {resource.englishLyrics}
-                                            </p>
-                                        </div>
-                                    )}
+                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                        {activeTab === 'tamil' && resource.tamilLyrics && (
+                                            <div className="bg-white p-4 sm:p-8 md:p-10 rounded-3xl border border-orange-100 shadow-sm">
+                                                <h3 className="text-xl sm:text-2xl font-bold text-orange-900 mb-4 sm:mb-6 flex items-center gap-2">
+                                                    🕉️ தமிழ் வரிகள்
+                                                </h3>
+                                                <p className="text-xl md:text-2xl leading-relaxed text-stone-800 whitespace-pre-line font-medium break-words">
+                                                    {resource.tamilLyrics}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'english' && resource.englishLyrics && (
+                                            <div className="bg-stone-50 p-4 sm:p-8 md:p-10 rounded-3xl border border-stone-200 shadow-sm">
+                                                <h3 className="text-xl sm:text-2xl font-bold text-stone-800 mb-4 sm:mb-6 flex items-center gap-2">
+                                                    🙌 English Lyrics
+                                                </h3>
+                                                <p className="text-lg md:text-xl leading-relaxed text-stone-700 whitespace-pre-line break-words italic">
+                                                    {resource.englishLyrics}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
