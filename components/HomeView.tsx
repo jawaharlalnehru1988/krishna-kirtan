@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Category, NavItem } from '../types';
+import OtherWebsites from './OtherWebsites';
 
 interface HomeViewProps {
   onStart: (category: Category) => void;
@@ -38,10 +39,10 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
               onClick={() => onStart(categories[0]?.id || 'kirtan')}
               className="px-8 py-3 bg-orange-600 text-white rounded-full font-bold text-lg hover:bg-orange-700 transition-all hover:scale-105 shadow-xl"
             >
-              Start Learning
+              Start Hearing
             </button>
             <button
-              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-3 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-full font-bold text-lg hover:bg-white/20 transition-all"
             >
               Explore Library
@@ -109,7 +110,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
       </section>
 
       {/* Featured Instruments */}
-      <section className="py-20 px-6 bg-stone-50">
+      <section id="categories" className="py-20 px-6 bg-stone-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-stone-900 mb-4">Choose Your Path</h2>
@@ -141,7 +142,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
                     {CATEGORY_FALLBACK_DESCRIPTIONS[cat.id.toLowerCase()] || CATEGORY_FALLBACK_DESCRIPTIONS.default}
                   </p>
                   <span className="text-orange-400 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
-                    Start Learning ➔
+                    Start Hearing ➔
                   </span>
                 </div>
               </button>
@@ -149,6 +150,9 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
           </div>
         </div>
       </section>
+
+      {/* Other Ecosystem Sites */}
+      <OtherWebsites />
     </div>
   );
 };
