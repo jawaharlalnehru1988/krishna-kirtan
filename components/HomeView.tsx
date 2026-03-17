@@ -8,6 +8,8 @@ interface HomeViewProps {
   categories: NavItem[];
 }
 
+const HIDE_OTHER_SITES = true;
+
 const CATEGORY_FALLBACK_DESCRIPTIONS: Record<string, string> = {
   mridanga: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.',
   harmonium: 'Master the melodies and ragas that evoke deep devotion.',
@@ -152,7 +154,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
       </section>
 
       {/* Other Ecosystem Sites */}
-      <OtherWebsites />
+      {!HIDE_OTHER_SITES && <OtherWebsites />}
     </div>
   );
 };
