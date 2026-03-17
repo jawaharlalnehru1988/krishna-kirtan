@@ -36,7 +36,7 @@ const App: React.FC = () => {
       const lessonId = params.get('lesson');
 
       setActiveCategory(category);
-      
+
       if (lessonId && resources.length > 0) {
         const lesson = resources.find(r => r.id.toString() === lessonId);
         setActiveLesson(lesson || null);
@@ -268,7 +268,7 @@ const App: React.FC = () => {
             <header className="sticky top-0 bg-stone-50/80 backdrop-blur-md z-10 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 className="text-3xl font-bold text-stone-900">{activeNavItem?.label}</h2>
-                <p className="text-stone-500 text-sm mt-1">Browse and learn various lessons and techniques.</p>
+                <p className="text-stone-500 text-sm mt-1">Browse and Hear Various Kirtans</p>
               </div>
 
               <div className="relative w-full sm:w-64">

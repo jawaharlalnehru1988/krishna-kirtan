@@ -27,9 +27,9 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView }) => {
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
             {/* Header info */}
             <div className="p-4 border-b border-stone-100 bg-stone-50 flex justify-between items-center px-6">
-                <span className="text-sm font-semibold text-stone-700 uppercase tracking-wider">Lesson Name</span>
+                <span className="text-sm font-semibold text-stone-700 uppercase tracking-wider">Audio List</span>
                 <span className="text-sm text-stone-500 font-medium">
-                    Showing {resources.length} lessons
+                    Showing {resources.length} Kirtans
                 </span>
             </div>
 
