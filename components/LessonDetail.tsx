@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import _ReactPlayer from 'react-player';
 const ReactPlayer = _ReactPlayer as any;
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
 import { Resource } from '../types';
 import AudioPlayer from './AudioPlayer';
 
@@ -26,6 +26,31 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     const [activeTab, setActiveTab] = useState<'tamil' | 'english'>(
         resource.tamilLyrics ? 'tamil' : 'english'
     );
+    const [showCopied, setShowCopied] = useState(false);
+
+    const handleShare = async () => {
+        const shareData = {
+            title: resource.title,
+            text: `Check out this lesson: ${resource.title}`,
+            url: window.location.href,
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error('Error sharing:', err);
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                setShowCopied(true);
+                setTimeout(() => setShowCopied(false), 2000);
+            } catch (err) {
+                console.error('Failed to copy link:', err);
+            }
+        }
+    };
 
     const hasBothLyrics = resource.tamilLyrics && resource.englishLyrics;
 
@@ -142,9 +167,23 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     </span>
                                 </div>
 
-                                <h1 className="text-4xl font-bold text-stone-900 mb-2 leading-tight">
-                                    {resource.title}
-                                </h1>
+                                <div className="flex items-start justify-between gap-4 mb-2">
+                                    <h1 className="text-4xl font-bold text-stone-900 leading-tight">
+                                        {resource.title}
+                                    </h1>
+                                    <button
+                                        onClick={handleShare}
+                                        className="mt-1 p-2 text-stone-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-all relative group"
+                                        title="Share lesson"
+                                    >
+                                        {showCopied ? <Check size={24} className="text-green-600" /> : <Share2 size={24} />}
+                                        {showCopied && (
+                                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] py-1 px-2 rounded opacity-100 transition-opacity">
+                                                Copied!
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
 
                                 {resource.authorName && (
                                     <div className="flex items-center gap-2 text-orange-700 font-semibold mb-6">
@@ -206,6 +245,17 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                                 </p>
                                             </div>
                                         )}
+                                    </div>
+
+                                    {/* Bottom Share Button */}
+                                    <div className="mt-8 pt-8 border-t border-stone-100">
+                                        <button
+                                            onClick={handleShare}
+                                            className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-orange-50 hover:bg-orange-100 text-orange-900 rounded-2xl font-bold transition-all group"
+                                        >
+                                            <Share2 size={20} className="group-hover:scale-110 transition-transform" />
+                                            {showCopied ? 'Link Copied to Clipboard!' : 'Share this Lesson with Others'}
+                                        </button>
                                     </div>
                                 </div>
                             )}

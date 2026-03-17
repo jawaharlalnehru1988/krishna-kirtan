@@ -293,7 +293,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
                     <div className="flex flex-wrap items-center justify-center gap-8 w-full border-t border-white/5 pt-4">
                         <div className="flex items-center gap-3 group">
                             <Volume2 size={18} className="text-stone-400" />
-                            <div className="w-24 sm:w-32 h-1.5 bg-stone-700 rounded-full relative overflow-hidden">
+                            <div className="w-24 sm:w-32 h-1.5 bg-stone-700 rounded-full relative">
                                 <input
                                     type="range"
                                     min={0}
@@ -304,9 +304,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
                                 <div
-                                    className="absolute top-0 left-0 h-full bg-orange-500/60"
+                                    className="absolute top-0 left-0 h-full bg-orange-500/60 rounded-full"
                                     style={{ width: `${volume * 100}%` }}
-                                ></div>
+                                >
+                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-xl border-2 border-orange-500 transform translate-x-1/2 active:scale-125 transition-transform"></div>
+                                </div>
                             </div>
                         </div>
 
