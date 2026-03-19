@@ -190,7 +190,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
 
                                 {(activeTranslation?.authorName || resource.authorName) && (
                                     <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 font-semibold mb-6">
-                                        <span className="text-xl">👤By </span>
+                                        <span className="text-xl">👤 </span>
                                         <span className="text-lg">{activeTranslation?.authorName || resource.authorName}</span>
                                     </div>
                                 )}

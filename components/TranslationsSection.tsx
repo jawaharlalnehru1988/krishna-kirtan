@@ -59,12 +59,12 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                 <div className="bg-white dark:bg-stone-900/40 p-6 sm:p-10 md:p-12 rounded-[2rem] border border-orange-100 dark:border-stone-800 shadow-sm transition-all duration-300 relative overflow-hidden group">
                     {/* Decorative element for dark mode */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
-                    
+
                     <h3 className="text-xl sm:text-2xl font-bold text-orange-950 dark:text-orange-400 mb-8 flex items-center gap-3">
                         <span className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-sm">
                             {(LANGUAGE_LABELS[activeLang] || { emoji: '🕉️' }).emoji}
                         </span>
-                        {(LANGUAGE_LABELS[activeLang] || { label: activeLang }).label} Lyrics
+                        {(LANGUAGE_LABELS[activeLang] || { label: activeLang }).label}
                     </h3>
 
                     <div className="markdown-content">
@@ -83,7 +83,7 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                                 ),
                                 h2: ({ children }) => (
                                     <h5 className="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-5 mt-8 flex items-center gap-3 font-playfair">
-                                        <span className="text-orange-600 dark:text-orange-500">✨</span> {children}
+                                        <span className="text-orange-600 dark:text-orange-500"></span> {children}
                                     </h5>
                                 ),
                                 blockquote: ({ children }) => (
