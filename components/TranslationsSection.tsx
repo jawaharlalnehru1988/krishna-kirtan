@@ -67,27 +67,42 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                         {(LANGUAGE_LABELS[activeLang] || { label: activeLang }).label}
                     </h3>
 
-                    <div className="markdown-content">
+                    <div className="markdown-content prose dark:prose-invert max-w-none">
                         <ReactMarkdown
                             remarkPlugins={[remarkBreaks]}
                             components={{
-                                p: ({ children }) => (
-                                    <p className="text-xl md:text-2xl leading-relaxed text-stone-800 dark:text-stone-300 font-medium break-words mb-6 last:mb-0">
-                                        {children}
-                                    </p>
-                                ),
+                                p: ({ children }) => {
+                                    // If children is empty or only whitespace, don't render an empty paragraph
+                                    if (React.Children.count(children) === 0) return null;
+                                    return (
+                                        <p className="text-xl md:text-2xl leading-relaxed text-stone-800 dark:text-stone-300 font-medium break-words mb-8 last:mb-0">
+                                            {children}
+                                        </p>
+                                    );
+                                },
                                 h1: ({ children }) => (
-                                    <h4 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-6 mt-10 shadow-sm border-b-2 border-orange-100 dark:border-stone-800 pb-3 first:mt-0 font-playfair">
+                                    <h4 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8 mt-12 pb-4 border-b-2 border-orange-100 dark:border-stone-800 font-playfair first:mt-0">
                                         {children}
                                     </h4>
                                 ),
                                 h2: ({ children }) => (
-                                    <h5 className="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-5 mt-8 flex items-center gap-3 font-playfair">
-                                        <span className="text-orange-600 dark:text-orange-500"></span> {children}
+                                    <h5 className="text-2xl font-bold text-orange-900 dark:text-orange-300 mb-6 mt-10 flex items-center gap-3 font-playfair bg-orange-50/50 dark:bg-stone-800/30 p-4 rounded-2xl border-l-4 border-orange-500">
+                                        {children}
                                     </h5>
                                 ),
+                                h3: ({ children }) => (
+                                    <h6 className="text-xl font-bold text-orange-800 dark:text-orange-400 mb-4 mt-8 font-playfair flex items-center gap-2">
+                                         {children}
+                                    </h6>
+                                ),
+                                h4: ({ children }) => (
+                                    <h6 className="text-lg font-bold text-stone-700 dark:text-stone-300 mb-3 mt-6 font-playfair">
+                                        {children}
+                                    </h6>
+                                ),
                                 blockquote: ({ children }) => (
-                                    <blockquote className="border-l-8 border-orange-300 dark:border-orange-900/50 pl-8 py-6 my-8 italic text-stone-700 dark:text-stone-300 bg-orange-50/30 dark:bg-stone-900/50 rounded-r-[2rem] text-xl md:text-2xl leading-relaxed font-serif shadow-inner">
+                                    <blockquote className="border-l-[12px] border-orange-400/30 dark:border-orange-900/40 pl-8 py-8 my-10 bg-orange-50/20 dark:bg-stone-900/40 rounded-r-[2.5rem] text-xl md:text-2xl leading-loose italic text-stone-700 dark:text-stone-200 font-serif relative transition-all hover:bg-orange-50/30 dark:hover:bg-stone-900/60 shadow-inner">
+                                        <span className="absolute -top-4 -left-2 text-6xl text-orange-200/50 dark:text-orange-900/20 font-serif select-none">"</span>
                                         {children}
                                     </blockquote>
                                 ),
@@ -99,7 +114,11 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                                 hr: () => <hr className="my-10 border-t-2 border-dashed border-orange-100 dark:border-stone-800" />,
                             }}
                         >
-                            {activeTranslation.lyrics}
+                            {(activeTranslation?.lyrics || '')
+                                .replace(/\\n/g, '\n')
+                                .replace(/\r\n/g, '\n')
+                                .replace(/\r/g, '\n')
+                                .trim()}
                         </ReactMarkdown>
                     </div>
                 </div>
