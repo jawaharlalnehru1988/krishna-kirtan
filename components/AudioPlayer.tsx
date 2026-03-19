@@ -190,7 +190,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
     };
 
     return (
-        <div className="w-full bg-stone-800/50 backdrop-blur-xl rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden">
+        <div className="w-full bg-stone-800/50 dark:bg-stone-900/80 backdrop-blur-xl rounded-3xl p-6 border border-white/10 dark:border-stone-800/50 shadow-2xl relative overflow-hidden transition-colors duration-300">
             {loading && (
                 <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent animate-shimmer"></div>
             )}

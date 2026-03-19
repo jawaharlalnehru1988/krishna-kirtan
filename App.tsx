@@ -21,6 +21,16 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Theme Sync
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   // Sync state FROM URL on initial load and popstate
   useEffect(() => {
@@ -176,11 +186,13 @@ const App: React.FC = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col relative">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex flex-col relative transition-colors duration-300">
       <Topbar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={toggleSidebar}
         onHomeClick={handleHomeClick}
+        theme={theme}
+        onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
       />
 
       <div className="flex flex-1 flex-col md:flex-row relative overflow-hidden">

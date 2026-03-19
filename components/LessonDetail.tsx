@@ -58,12 +58,12 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full bg-white relative">
+        <div className="flex flex-col h-full bg-white dark:bg-stone-950 relative transition-colors duration-300">
             {/* Header / Back Button */}
-            <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-stone-200 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 z-20 bg-white/80 dark:bg-stone-950/80 backdrop-blur-md border-b border-stone-200 dark:border-stone-800 px-6 py-4 flex items-center justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 text-stone-600 hover:text-orange-600 transition-colors font-medium group"
+                    className="flex items-center gap-2 text-stone-600 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium group"
                 >
                     <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Library
                 </button>
@@ -72,7 +72,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                     <button
                         onClick={onPrevious}
                         disabled={!hasPrevious}
-                        className="p-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-orange-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-2 rounded-full border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900 hover:text-orange-600 dark:hover:text-orange-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Previous Lesson"
                     >
                         <ChevronLeft size={20} />
@@ -80,7 +80,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                     <button
                         onClick={onNext}
                         disabled={!hasNext}
-                        className="p-2 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:text-orange-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="p-2 rounded-full border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900 hover:text-orange-600 dark:hover:text-orange-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         title="Next Lesson"
                     >
                         <ChevronRight size={20} />
@@ -165,23 +165,23 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                         <div className="lg:col-span-2 space-y-8">
                             <div>
                                 <div className="flex items-center gap-3 mb-3">
-                                    <span className="px-3 py-1 bg-stone-100 text-stone-600 rounded-full text-xs font-bold uppercase tracking-wider">
+                                    <span className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-full text-xs font-bold uppercase tracking-wider">
                                         {resource.category}
                                     </span>
                                 </div>
 
                                 <div className="flex items-start justify-between gap-4 mb-2">
-                                    <h1 className="text-4xl font-bold text-stone-900 leading-tight">
+                                    <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
                                         {activeTranslation?.title || resource.title}
                                     </h1>
                                     <button
                                         onClick={handleShare}
-                                        className="mt-1 p-2 text-stone-400 hover:text-orange-600 hover:bg-orange-50 rounded-full transition-all relative group"
+                                        className="mt-1 p-2 text-stone-400 dark:text-stone-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-full transition-all relative group"
                                         title="Share lesson"
                                     >
                                         {showCopied ? <Check size={24} className="text-green-600" /> : <Share2 size={24} />}
                                         {showCopied && (
-                                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-stone-800 text-white text-[10px] py-1 px-2 rounded opacity-100 transition-opacity">
+                                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-stone-800 dark:bg-stone-700 text-white text-[10px] py-1 px-2 rounded opacity-100 transition-opacity">
                                                 Copied!
                                             </span>
                                         )}
@@ -189,13 +189,13 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                 </div>
 
                                 {(activeTranslation?.authorName || resource.authorName) && (
-                                    <div className="flex items-center gap-2 text-orange-700 font-semibold mb-6">
+                                    <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 font-semibold mb-6">
                                         <span className="text-xl">👤By </span>
                                         <span className="text-lg">{activeTranslation?.authorName || resource.authorName}</span>
                                     </div>
                                 )}
 
-                                <p className="text-lg text-stone-600 leading-relaxed whitespace-pre-line mb-8">
+                                <p className="text-lg text-stone-600 dark:text-stone-400 leading-relaxed whitespace-pre-line mb-8">
                                     {activeTranslation?.description || resource.description}
                                 </p>
                             </div>
@@ -211,20 +211,20 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
 
                         {/* Sidebar Metadata */}
                         <div className="space-y-6">
-                            <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                                <h3 className="font-bold text-stone-900 mb-4 border-b border-stone-200 pb-2">
+                            <div className="bg-stone-50 dark:bg-stone-900 p-6 rounded-2xl border border-stone-100 dark:border-stone-800 shadow-sm transition-colors duration-300">
+                                <h3 className="font-bold text-stone-900 dark:text-stone-100 mb-4 border-b border-stone-200 dark:border-stone-800 pb-2">
                                     Details
                                 </h3>
 
                                 <div className="space-y-4">
                                     <div>
-                                        <span className="text-xs text-stone-500 uppercase font-bold block mb-1">Category</span>
-                                        <p className="font-medium text-stone-800 capitalize">{resource.category}</p>
+                                        <span className="text-xs text-stone-500 dark:text-stone-400 uppercase font-bold block mb-1">Category</span>
+                                        <p className="font-medium text-stone-800 dark:text-stone-200 capitalize">{resource.category}</p>
                                     </div>
 
                                     <div>
-                                        <span className="text-xs text-stone-500 uppercase font-bold block mb-1">Last Updated</span>
-                                        <p className="font-medium text-stone-800">
+                                        <span className="text-xs text-stone-500 dark:text-stone-400 uppercase font-bold block mb-1">Last Updated</span>
+                                        <p className="font-medium text-stone-800 dark:text-stone-200">
                                             {resource.updated_at
                                                 ? new Date(resource.updated_at).toLocaleDateString(undefined, {
                                                     year: 'numeric',
@@ -236,8 +236,8 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     </div>
 
                                     <div>
-                                        <span className="text-xs text-stone-500 uppercase font-bold block mb-1">Published On</span>
-                                        <p className="font-medium text-stone-800">
+                                        <span className="text-xs text-stone-500 dark:text-stone-400 uppercase font-bold block mb-1">Published On</span>
+                                        <p className="font-medium text-stone-800 dark:text-stone-200">
                                             {resource.created_at
                                                 ? new Date(resource.created_at).toLocaleDateString(undefined, {
                                                     year: 'numeric',

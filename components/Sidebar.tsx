@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 w-72 bg-white border-r border-stone-200 flex flex-col z-50 transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 w-72 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 flex flex-col z-50 transition-all duration-300 ease-in-out
         md:relative md:translate-x-0 md:h-[calc(100vh-73px)] md:sticky md:top-[73px]
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
@@ -42,11 +42,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               onClick={() => onCategoryChange(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left ${activeCategory === item.id && !activeLesson
-                ? 'bg-orange-100 text-orange-800 font-bold shadow-sm'
-                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                ? 'bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400 font-bold shadow-sm'
+                : 'text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
             >
-              <div className="w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
+              <div className="w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 flex-shrink-0 border border-stone-200 dark:border-stone-700">
                 {item.image ? (
                   <img src={item.image} alt={item.label} className="w-full h-full object-cover" />
                 ) : (

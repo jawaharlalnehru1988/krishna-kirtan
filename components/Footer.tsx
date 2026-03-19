@@ -2,9 +2,9 @@ import React from 'react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="mt-auto p-10 bg-stone-100 border-t border-stone-200">
+    <footer className="mt-auto p-10 bg-stone-100 dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 transition-colors duration-300">
       <div className="max-w-4xl mx-auto text-center">
-        <p className="text-stone-400 text-sm italic">
+        <p className="text-stone-400 dark:text-stone-500 text-sm italic">
           "Kirtaniyah sada harih" - Chant the holy names always.
         </p>
         {/* <div className="mt-4 flex justify-center gap-6">

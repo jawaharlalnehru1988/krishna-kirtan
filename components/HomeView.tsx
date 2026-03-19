@@ -54,30 +54,30 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
       </section>
 
       {/* Quote & Prabhupada Section */}
-      <section id="about" className="py-20 px-6 bg-white border-b border-stone-200">
+      <section id="about" className="py-20 px-6 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 transition-colors duration-300">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
-            <div className="inline-block px-4 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-bold uppercase tracking-widest">
+            <div className="inline-block px-4 py-1 bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400 rounded-full text-sm font-bold uppercase tracking-widest">
               Divine Inspiration
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-stone-900 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
               Teachings of His Divine Grace
             </h2>
-            <blockquote className="border-l-4 border-orange-500 pl-6 italic text-2xl text-stone-700 font-medium">
+            <blockquote className="border-l-4 border-orange-500 pl-6 italic text-2xl text-stone-700 dark:text-stone-300 font-medium">
               "Simply by chanting this holy name of Hari, one can become free from all the reactions of sinful life. This kirtan movement is the only way to realize God in this age."
             </blockquote>
-            <p className="text-lg text-stone-600 leading-relaxed">
+            <p className="text-lg text-stone-600 dark:text-stone-400 leading-relaxed">
               Our academy is dedicated to preserving the traditional melodies and rhythms established by A.C. Bhaktivedanta Swami Prabhupada. Whether you are picking up a mridanga for the first time or perfecting a complex raga on the harmonium, we are here to support your devotional journey.
             </p>
             <div className="flex items-center gap-4 pt-4">
               <img
                 src="/parbhupada.png"
                 alt="Srila Prabhupada"
-                className="w-16 h-16 rounded-full object-cover border-2 border-orange-200 p-0.5"
+                className="w-16 h-16 rounded-full object-cover border-2 border-orange-200 dark:border-orange-800 p-0.5 shadow-sm"
               />
               <div>
-                <p className="font-bold text-stone-900">Srila Prabhupada</p>
-                <p className="text-sm text-stone-500">Founder-Acharya of ISKCON</p>
+                <p className="font-bold text-stone-900 dark:text-stone-100">Srila Prabhupada</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">Founder-Acharya of ISKCON</p>
               </div>
             </div>
           </div>
@@ -112,11 +112,11 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
       </section>
 
       {/* Featured Instruments */}
-      <section id="categories" className="py-20 px-6 bg-stone-50">
+      <section id="categories" className="py-20 px-6 bg-stone-50 dark:bg-stone-950 transition-colors duration-300">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-stone-900 mb-4">Choose Your Path</h2>
-            <p className="text-stone-500 max-w-2xl mx-auto">Select a category to begin your training with structured lessons, mantras, and reference guides.</p>
+            <h2 className="text-4xl font-bold text-stone-900 dark:text-stone-100 mb-4">Choose Your Path</h2>
+            <p className="text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">Select a category to begin your training with structured lessons, mantras, and reference guides.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -124,7 +124,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
               <button
                 key={cat.id}
                 onClick={() => onStart(cat.id as Category)}
-                className="group relative h-80 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-stone-100 text-left"
+                className="group relative h-80 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-stone-100 dark:border-stone-800 text-left"
               >
                 {/* Background Image */}
                 <div className="absolute inset-0">
