@@ -6,17 +6,11 @@ import LessonDetail from './components/LessonDetail';
 import HomeView from './components/HomeView';
 
 import { Menu, X } from 'lucide-react';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  mridanga: '🥁',
-  mritanga: '🥁',
-  harmonium: '🎹',
-  karatal: '🔔',
-  raga: '🎵',
-  bhajans: '📜',
-  kirtan: '🙌',
-  default: '🪔'
-};
+import { CATEGORY_ICONS } from './constants';
+import Topbar from './components/Topbar';
+import Sidebar from './components/Sidebar';
+import Header from './components/Header';
+import Footer from './components/Footer';
 
 const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<Category>('home');
@@ -84,20 +78,28 @@ const App: React.FC = () => {
         const categoriesData = categoriesResponse.data;
 
         // Transform API data to Resource type
-        const fetchedResources: Resource[] = kirtansData.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          category: item.category,
-          authorName: item.authorName || '',
-          description: item.description || '',
-          tamilLyrics: item.tamilLyrics || '',
-          englishLyrics: item.englishLyrics || '',
-          audioPath: item.audioPath,
-          imagePath: item.imagePath,
-          videoPath: item.videoPath,
-          created_at: item.created_at,
-          updated_at: item.updated_at
-        }));
+        const fetchedResources: Resource[] = kirtansData.map((item: any) => {
+          const translations = item.translations || [];
+          const enTranslation = translations.find((t: any) => t.language_code === 'en') || translations[0];
+          const taTranslation = translations.find((t: any) => t.language_code === 'ta');
+
+          return {
+            id: item.id,
+            category: item.category,
+            audioPath: item.audioPath,
+            imagePath: item.imagePath,
+            videoPath: item.videoPath,
+            translations: translations,
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            // Flattened fields for UI components
+            title: enTranslation?.title || `Kirtan ${item.id}`,
+            authorName: enTranslation?.authorName || '',
+            description: enTranslation?.description || '',
+            tamilLyrics: taTranslation?.lyrics || '',
+            englishLyrics: enTranslation?.lyrics || ''
+          };
+        });
 
         setResources(fetchedResources);
 
@@ -165,90 +167,38 @@ const App: React.FC = () => {
     setActiveLesson(null);
   };
 
+  const handleHomeClick = () => {
+    setActiveCategory('home');
+    setActiveLesson(null);
+    setIsSidebarOpen(false);
+  };
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row relative">
-      {/* Mobile Top Bar */}
-      <div className="md:hidden bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
-        <div
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
-        >
-          <img src="/lord caitanya.jpeg" alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
-          <span className="font-bold text-orange-800 tracking-tight">Sri Krishna Kirtan</span>
-        </div>
-        <button
-          onClick={toggleSidebar}
-          className="p-2 text-stone-600 hover:text-orange-600 transition-colors"
-        >
-          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
+    <div className="min-h-screen bg-stone-50 flex flex-col relative">
+      <Topbar
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={toggleSidebar}
+        onHomeClick={handleHomeClick}
+      />
 
-      {/* Sidebar Overlay (Mobile only) */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        ></div>
-      )}
+      <div className="flex flex-1 flex-col md:flex-row relative overflow-hidden">
+        <Sidebar
+          navItems={navItems}
+          activeCategory={activeCategory}
+          activeLesson={activeLesson}
+          onCategoryChange={(id) => {
+            setActiveCategory(id as Category);
+            setActiveLesson(null);
+            setIsSidebarOpen(false);
+          }}
+          isSidebarOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
 
-      {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 w-72 bg-white border-r border-stone-200 flex flex-col z-50 transition-transform duration-300 ease-in-out
-        md:relative md:translate-x-0 md:h-screen md:sticky md:top-0
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div
-          className="p-6 border-b border-stone-100 bg-orange-50/30 hidden md:block cursor-pointer"
-          onClick={() => { setActiveCategory('home'); setActiveLesson(null); }}
-        >
-          <h1 className="text-2xl font-bold text-orange-800 tracking-tight flex items-center gap-2">
-            <img src="/lord caitanya.jpeg" alt="Logo" className="w-10 h-10 rounded-xl object-cover" /> <span className="playfair">Sri Krishna Kirtan</span>
-          </h1>
-          <p className="text-xs text-stone-500 font-medium uppercase tracking-widest mt-1">Resource Library</p>
-        </div>
-
-        {/* Brand for Mobile Sidebar specifically */}
-        <div className="md:hidden p-6 border-b border-stone-100 bg-orange-50/30 flex items-center justify-between">
-          <div className="cursor-pointer" onClick={() => { setActiveCategory('home'); setActiveLesson(null); setIsSidebarOpen(false); }}>
-            <span className="font-bold text-orange-800">Resource Library</span>
-          </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="text-stone-400">
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveCategory(item.id);
-                setActiveLesson(null);
-                setIsSidebarOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left ${activeCategory === item.id && !activeLesson
-                ? 'bg-orange-100 text-orange-800 font-bold shadow-sm'
-                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
-                }`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden bg-stone-100 flex-shrink-0 border border-stone-200">
-                {item.image ? (
-                  <img src={item.image} alt={item.label} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xl">{item.icon}</span>
-                )}
-              </div>
-              <span className="text-sm">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-y-auto h-screen relative">
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col overflow-y-auto h-[calc(100vh-73px)] relative">
         {activeLesson ? (
           <LessonDetail
             resource={activeLesson}
@@ -265,23 +215,11 @@ const App: React.FC = () => {
           />
         ) : (
           <>
-            <header className="sticky top-0 bg-stone-50/80 backdrop-blur-md z-10 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h2 className="text-3xl font-bold text-stone-900">{activeNavItem?.label}</h2>
-                <p className="text-stone-500 text-sm mt-1">Browse and Hear Various Kirtans</p>
-              </div>
-
-              <div className="relative w-full sm:w-64">
-                <input
-                  type="text"
-                  placeholder="Search lessons..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400">🔍</span>
-              </div>
-            </header>
+            <Header
+              title={activeNavItem?.label || ''}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
 
             <section className="p-6">
               {loading ? (
@@ -311,22 +249,10 @@ const App: React.FC = () => {
         )}
 
 
-        {/* Footer - Only show on home or list view, arguably could be in detail too but cleaner without */}
-        {!activeLesson && (
-          <footer className="mt-auto p-10 bg-stone-100 border-t border-stone-200">
-            <div className="max-w-4xl mx-auto text-center">
-              <p className="text-stone-400 text-sm italic">
-                "Kirtaniyah sada harih" - Chant the holy names always.
-              </p>
-              <div className="mt-4 flex justify-center gap-6">
-                <a href="#" className="text-stone-400 hover:text-stone-600 transition-colors">Documentation</a>
-                <a href="#" className="text-stone-400 hover:text-stone-600 transition-colors">Our Gurus</a>
-                <a href="#" className="text-stone-400 hover:text-stone-600 transition-colors">Community</a>
-              </div>
-            </div>
-          </footer>
-        )}
-      </main>
+        {/* Footer */}
+        {!activeLesson && <Footer />}
+        </main>
+      </div>
     </div>
   );
 };

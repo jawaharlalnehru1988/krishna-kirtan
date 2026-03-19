@@ -5,6 +5,7 @@ const ReactPlayer = _ReactPlayer as any;
 import { ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
 import { Resource } from '../types';
 import AudioPlayer from './AudioPlayer';
+import TranslationsSection from './TranslationsSection';
 
 interface LessonDetailProps {
     resource: Resource;
@@ -23,15 +24,19 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     hasNext,
     hasPrevious
 }) => {
-    const [activeTab, setActiveTab] = useState<'tamil' | 'english'>(
-        resource.tamilLyrics ? 'tamil' : 'english'
+    const [activeLang, setActiveLang] = useState<string>(
+        resource.translations.length > 0
+            ? (resource.translations.find(t => t.language_code === 'ta') ? 'ta' : resource.translations[0].language_code)
+            : 'en'
     );
     const [showCopied, setShowCopied] = useState(false);
 
+    const activeTranslation = resource.translations.find(t => t.language_code === activeLang) || resource.translations[0];
+
     const handleShare = async () => {
         const shareData = {
-            title: resource.title,
-            text: `Check out this lesson: ${resource.title}`,
+            title: activeTranslation?.title || resource.title,
+            text: `Check out this lesson: ${activeTranslation?.title || resource.title}`,
             url: window.location.href,
         };
 
@@ -51,8 +56,6 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
             }
         }
     };
-
-    const hasBothLyrics = resource.tamilLyrics && resource.englishLyrics;
 
     return (
         <div className="flex flex-col h-full bg-white relative">
@@ -116,7 +119,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                 <div className="absolute inset-0">
                                     <img
                                         src={resource.imagePath}
-                                        alt={resource.title}
+                                        alt={activeTranslation?.title || resource.title}
                                         className="w-full h-full object-cover opacity-40 blur-[2px]"
                                     />
                                     <div className="absolute inset-0 bg-black/40"></div>
@@ -131,22 +134,22 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                             <div className="relative z-10 w-full max-w-xl text-center">
                                 {resource.imagePath && (
                                     <div className="mb-6 inline-flex items-center justify-center w-32 h-32 rounded-2xl overflow-hidden border-2 border-orange-500/50 shadow-[0_0_30px_rgba(234,88,12,0.3)]">
-                                        <img src={resource?.imagePath} alt={resource?.title} className="w-full h-full object-cover" />
+                                        <img src={resource?.imagePath} alt={activeTranslation?.title || resource.title} className="w-full h-full object-cover" />
                                     </div>
                                 )}
-                                <h2 className="text-2xl font-bold text-white mb-2">{resource?.title || 'Kirtan Audio'}</h2>
+                                <h2 className="text-2xl font-bold text-white mb-2">{activeTranslation?.title || resource?.title || 'Kirtan Audio'}</h2>
                                 <p className="text-stone-400 mb-8 italic text-sm line-clamp-1">
-                                    {resource?.description
-                                        ? (resource.description.length > 40
-                                            ? `${resource.description.substring(0, 40)}...`
-                                            : resource.description)
+                                    {activeTranslation?.description || resource?.description
+                                        ? ((activeTranslation?.description || resource.description).length > 40
+                                            ? `${(activeTranslation?.description || resource.description).substring(0, 40)}...`
+                                            : (activeTranslation?.description || resource.description))
                                         : 'Listen and practice this devotional kirtan.'}
                                 </p>
 
                                 <div className="w-full">
                                     <AudioPlayer
                                         url={resource.audioPath || ''}
-                                        title={resource.title}
+                                        title={activeTranslation?.title || resource.title}
                                         onEnded={onNext}
                                         onNext={onNext}
                                         onPrevious={onPrevious}
@@ -169,7 +172,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
 
                                 <div className="flex items-start justify-between gap-4 mb-2">
                                     <h1 className="text-4xl font-bold text-stone-900 leading-tight">
-                                        {resource.title}
+                                        {activeTranslation?.title || resource.title}
                                     </h1>
                                     <button
                                         onClick={handleShare}
@@ -185,80 +188,25 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     </button>
                                 </div>
 
-                                {resource.authorName && (
+                                {(activeTranslation?.authorName || resource.authorName) && (
                                     <div className="flex items-center gap-2 text-orange-700 font-semibold mb-6">
                                         <span className="text-xl">👤By </span>
-                                        <span className="text-lg">{resource.authorName}</span>
+                                        <span className="text-lg">{activeTranslation?.authorName || resource.authorName}</span>
                                     </div>
                                 )}
 
                                 <p className="text-lg text-stone-600 leading-relaxed whitespace-pre-line mb-8">
-                                    {resource.description}
+                                    {activeTranslation?.description || resource.description}
                                 </p>
                             </div>
 
-                            {/* Lyrics Section */}
-                            {(resource.tamilLyrics || resource.englishLyrics) && (
-                                <div className="mt-12">
-                                    {hasBothLyrics && (
-                                        <div className="flex p-1 bg-stone-100 rounded-2xl mb-6 w-fit border border-stone-200">
-                                            <button
-                                                onClick={() => setActiveTab('tamil')}
-                                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'tamil'
-                                                    ? 'bg-white text-orange-800 shadow-sm'
-                                                    : 'text-stone-500 hover:text-stone-800'
-                                                    }`}
-                                            >
-                                                🕉️ தமிழ்
-                                            </button>
-                                            <button
-                                                onClick={() => setActiveTab('english')}
-                                                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'english'
-                                                    ? 'bg-white text-orange-800 shadow-sm'
-                                                    : 'text-stone-500 hover:text-stone-800'
-                                                    }`}
-                                            >
-                                                🙌 English
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        {activeTab === 'tamil' && resource.tamilLyrics && (
-                                            <div className="bg-white p-4 sm:p-8 md:p-10 rounded-3xl border border-orange-100 shadow-sm">
-                                                <h3 className="text-xl sm:text-2xl font-bold text-orange-900 mb-4 sm:mb-6 flex items-center gap-2">
-                                                    🕉️ தமிழ் வரிகள்
-                                                </h3>
-                                                <p className="text-xl md:text-2xl leading-relaxed text-stone-800 whitespace-pre-line font-medium break-words">
-                                                    {resource.tamilLyrics}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'english' && resource.englishLyrics && (
-                                            <div className="bg-stone-50 p-4 sm:p-8 md:p-10 rounded-3xl border border-stone-200 shadow-sm">
-                                                <h3 className="text-xl sm:text-2xl font-bold text-stone-800 mb-4 sm:mb-6 flex items-center gap-2">
-                                                    🙌 English Lyrics
-                                                </h3>
-                                                <p className="text-lg md:text-xl leading-relaxed text-stone-700 whitespace-pre-line break-words italic">
-                                                    {resource.englishLyrics}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Bottom Share Button */}
-                                    <div className="mt-8 pt-8 border-t border-stone-100">
-                                        <button
-                                            onClick={handleShare}
-                                            className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-orange-50 hover:bg-orange-100 text-orange-900 rounded-2xl font-bold transition-all group"
-                                        >
-                                            <Share2 size={20} className="group-hover:scale-110 transition-transform" />
-                                            {showCopied ? 'Link Copied to Clipboard!' : 'Share this Lesson with Others'}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                            <TranslationsSection
+                                resource={resource}
+                                activeLang={activeLang}
+                                setActiveLang={setActiveLang}
+                                onShare={handleShare}
+                                showCopied={showCopied}
+                            />
                         </div>
 
                         {/* Sidebar Metadata */}

@@ -1,17 +1,28 @@
 
+export interface Translation {
+  id: number;
+  language_code: string;
+  title: string;
+  authorName: string;
+  description: string;
+  lyrics: string;
+}
+
 export interface Resource {
   id: number;
-  title: string;
   category: string;
+  audioPath: string | null;
+  imagePath: string | null;
+  videoPath: string | null;
+  translations: Translation[];
+  created_at: string;
+  updated_at: string;
+  // Flattened fields for compatibility with existing components
+  title: string;
   authorName: string;
   description: string;
   tamilLyrics: string;
   englishLyrics: string;
-  audioPath: string | null;
-  imagePath: string | null;
-  videoPath: string | null;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface KirtanCategory {
