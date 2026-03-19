@@ -14,6 +14,8 @@ interface LessonDetailProps {
     onPrevious: () => void;
     hasNext: boolean;
     hasPrevious: boolean;
+    isPlaying: boolean;
+    setIsPlaying: (playing: boolean) => void;
 }
 
 const LessonDetail: React.FC<LessonDetailProps> = ({
@@ -22,7 +24,9 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     onNext,
     onPrevious,
     hasNext,
-    hasPrevious
+    hasPrevious,
+    isPlaying,
+    setIsPlaying
 }) => {
     const [activeLang, setActiveLang] = useState<string>(
         resource.translations.length > 0
@@ -100,7 +104,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     width="100%"
                                     height="100%"
                                     controls={true}
-                                    playing={true}
+                                    playing={isPlaying}
                                     onEnded={onNext}
                                     config={{
                                         youtube: {
@@ -154,6 +158,8 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                         onNext={onNext}
                                         onPrevious={onPrevious}
                                         resource={resource}
+                                        playing={isPlaying}
+                                        setPlaying={setIsPlaying}
                                     />
                                 </div>
                             </div>

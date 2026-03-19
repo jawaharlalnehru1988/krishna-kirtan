@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { Category, Resource, NavItem } from './types';
 import LessonList from './components/LessonList';
 import LessonDetail from './components/LessonDetail';
 import HomeView from './components/HomeView';
+import InactivityPrompt from './components/InactivityPrompt';
 
 import { Menu, X } from 'lucide-react';
 import { CATEGORY_ICONS } from './constants';
@@ -22,6 +23,9 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showInactivityPrompt, setShowInactivityPrompt] = useState(false);
+  const lastActivityTimeRef = useRef<number>(Date.now());
 
   // Theme Sync
   useEffect(() => {
@@ -146,27 +150,64 @@ const App: React.FC = () => {
     );
   }, [activeCategory, searchQuery, resources]);
 
+  // Inactivity tracking logic
+  useEffect(() => {
+    const handleActivity = () => {
+      lastActivityTimeRef.current = Date.now();
+    };
+
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('click', handleActivity);
+
+    const interval = setInterval(() => {
+      const INACTIVITY_THRESHOLD = 45 * 60 * 1000; // 45 minutes
+      if (isPlaying && !showInactivityPrompt && (Date.now() - lastActivityTimeRef.current > INACTIVITY_THRESHOLD)) {
+        setShowInactivityPrompt(true);
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => {
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      clearInterval(interval);
+    };
+  }, [isPlaying, showInactivityPrompt]);
+
+  const handleInactivityContinue = () => {
+    lastActivityTimeRef.current = Date.now();
+    setShowInactivityPrompt(false);
+  };
+
+  const handleInactivityStop = () => {
+    setIsPlaying(false);
+    setShowInactivityPrompt(false);
+  };
+
   const activeNavItem = navItems.find(item => item.id === activeCategory);
 
   const handleNextLesson = () => {
-    if (!activeLesson) return;
+    if (!activeLesson || filteredResources.length === 0) return;
     const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
-    if (currentIndex < filteredResources.length - 1) {
-      setActiveLesson(filteredResources[currentIndex + 1]);
-    }
+    const nextIndex = (currentIndex + 1) % filteredResources.length;
+    setActiveLesson(filteredResources[nextIndex]);
   };
 
   const handlePreviousLesson = () => {
-    if (!activeLesson) return;
+    if (!activeLesson || filteredResources.length === 0) return;
     const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
-    if (currentIndex > 0) {
-      setActiveLesson(filteredResources[currentIndex - 1]);
-    }
+    const prevIndex = (currentIndex - 1 + filteredResources.length) % filteredResources.length;
+    setActiveLesson(filteredResources[prevIndex]);
   };
 
   const currentIndex = activeLesson ? filteredResources.findIndex(r => r.id === activeLesson.id) : -1;
-  const hasNext = activeLesson ? currentIndex < filteredResources.length - 1 : false;
-  const hasPrevious = activeLesson ? currentIndex > 0 : false;
+  const hasNext = filteredResources.length > 1;
+  const hasPrevious = filteredResources.length > 1;
 
   const handleLessonView = (resource: Resource) => {
     setActiveLesson(resource);
@@ -219,6 +260,8 @@ const App: React.FC = () => {
             onPrevious={handlePreviousLesson}
             hasNext={hasNext}
             hasPrevious={hasPrevious}
+            isPlaying={isPlaying}
+            setIsPlaying={setIsPlaying}
           />
         ) : activeCategory === 'home' ? (
           <HomeView
@@ -265,6 +308,13 @@ const App: React.FC = () => {
         {!activeLesson && <Footer />}
         </main>
       </div>
+
+      {showInactivityPrompt && (
+        <InactivityPrompt
+          onContinue={handleInactivityContinue}
+          onStop={handleInactivityStop}
+        />
+      )}
     </div>
   );
 };

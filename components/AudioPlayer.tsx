@@ -11,10 +11,11 @@ interface AudioPlayerProps {
     onNext?: () => void;
     onPrevious?: () => void;
     resource?: Resource;
+    playing: boolean;
+    setPlaying: (playing: boolean) => void;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, onPrevious, resource }) => {
-    const [playing, setPlaying] = useState(true);
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, onPrevious, resource, playing, setPlaying }) => {
     const [isRepeat, setIsRepeat] = useState(false);
     const [duration, setDuration] = useState(0);
     const [played, setPlayed] = useState(0);
