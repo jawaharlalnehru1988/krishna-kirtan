@@ -6,7 +6,14 @@ interface TopbarProps {
   onHomeClick: () => void;
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
+  selectedLanguage: string;
+  onLanguageChange: (lang: string) => void;
 }
+
+const LANGUAGES = [
+  { id: 'ta', label: 'தமிழ்', icon: '🇮🇳' },
+  { id: 'en', label: 'Eng', icon: '🇬🇧' },
+];
 
 const Topbar: React.FC<TopbarProps> = ({
   isSidebarOpen,
@@ -14,6 +21,8 @@ const Topbar: React.FC<TopbarProps> = ({
   onHomeClick,
   theme,
   onToggleTheme,
+  selectedLanguage,
+  onLanguageChange,
 }) => {
   return (
     <div className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm transition-colors duration-300">
@@ -29,6 +38,23 @@ const Topbar: React.FC<TopbarProps> = ({
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
+        {/* Language Switcher */}
+        <div className="flex bg-stone-100 dark:bg-stone-800 p-1 rounded-xl shadow-inner mr-1">
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang.id}
+              onClick={() => onLanguageChange(lang.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${
+                selectedLanguage === lang.id
+                  ? 'bg-white dark:bg-stone-700 text-orange-600 dark:text-orange-400 shadow-sm scale-105'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
+              }`}
+            >
+              {lang.label}
+            </button>
+          ))}
+        </div>
+
         {/* Theme Switcher */}
         <button
           onClick={onToggleTheme}

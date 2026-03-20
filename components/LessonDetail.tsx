@@ -16,6 +16,7 @@ interface LessonDetailProps {
     hasPrevious: boolean;
     isPlaying: boolean;
     setIsPlaying: (playing: boolean) => void;
+    selectedLanguage: string;
 }
 
 const LessonDetail: React.FC<LessonDetailProps> = ({
@@ -26,13 +27,17 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     hasNext,
     hasPrevious,
     isPlaying,
-    setIsPlaying
+    setIsPlaying,
+    selectedLanguage
 }) => {
-    const [activeLang, setActiveLang] = useState<string>(
-        resource.translations.length > 0
-            ? (resource.translations.find(t => t.language_code === 'ta') ? 'ta' : resource.translations[0].language_code)
-            : 'en'
-    );
+    const [activeLang, setActiveLang] = useState<string>(selectedLanguage);
+
+    // Sync activeLang with selectedLanguage if user hasn't manually switched in this view
+    React.useEffect(() => {
+        if (resource.translations.some(t => t.language_code === selectedLanguage)) {
+            setActiveLang(selectedLanguage);
+        }
+    }, [selectedLanguage, resource]);
     const [showCopied, setShowCopied] = useState(false);
 
     const activeTranslation = resource.translations.find(t => t.language_code === activeLang) || resource.translations[0];

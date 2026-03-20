@@ -23,6 +23,7 @@ export interface Resource {
   description: string;
   tamilLyrics: string;
   englishLyrics: string;
+  order: number;
 }
 
 export interface KirtanCategory {

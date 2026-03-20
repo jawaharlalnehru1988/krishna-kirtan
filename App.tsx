@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isPlaying, setIsPlaying] = useState(false);
   const [showInactivityPrompt, setShowInactivityPrompt] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('ta');
   const lastActivityTimeRef = useRef<number>(Date.now());
 
   // Theme Sync
@@ -42,8 +43,10 @@ const App: React.FC = () => {
       const params = new URLSearchParams(window.location.search);
       const category = params.get('category') as Category || 'home';
       const lessonId = params.get('lesson');
+      const lang = params.get('lang');
 
       setActiveCategory(category);
+      if (lang) setSelectedLanguage(lang);
 
       if (lessonId && resources.length > 0) {
         const lesson = resources.find(r => r.id.toString() === lessonId);
@@ -73,12 +76,15 @@ const App: React.FC = () => {
     if (activeLesson) {
       params.set('lesson', activeLesson.id.toString());
     }
+    if (selectedLanguage !== 'ta') {
+      params.set('lang', selectedLanguage);
+    }
 
     const newSearch = params.toString() ? `?${params.toString()}` : '';
     if (window.location.search !== newSearch) {
       window.history.pushState(null, '', window.location.pathname + newSearch);
     }
-  }, [activeCategory, activeLesson, loading]);
+  }, [activeCategory, activeLesson, selectedLanguage, loading]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,7 +117,8 @@ const App: React.FC = () => {
             authorName: enTranslation?.authorName || '',
             description: enTranslation?.description || '',
             tamilLyrics: taTranslation?.lyrics || '',
-            englishLyrics: enTranslation?.lyrics || ''
+            englishLyrics: enTranslation?.lyrics || '',
+            order: item.order || 0
           };
         });
 
@@ -141,13 +148,15 @@ const App: React.FC = () => {
   }, []);
 
   const filteredResources = useMemo(() => {
-    return resources.filter(res =>
-      res.category.toLowerCase() === activeCategory.toLowerCase() &&
-      (res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.tamilLyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        res.englishLyrics.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    return resources
+      .filter(res =>
+        res.category.toLowerCase() === activeCategory.toLowerCase() &&
+        (res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          res.tamilLyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          res.englishLyrics.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [activeCategory, searchQuery, resources]);
 
   // Inactivity tracking logic
@@ -234,6 +243,8 @@ const App: React.FC = () => {
         onHomeClick={handleHomeClick}
         theme={theme}
         onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
       />
 
       <div className="flex flex-1 flex-col md:flex-row relative overflow-hidden">
@@ -262,6 +273,7 @@ const App: React.FC = () => {
             hasPrevious={hasPrevious}
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
+            selectedLanguage={selectedLanguage}
           />
         ) : activeCategory === 'home' ? (
           <HomeView
@@ -285,7 +297,11 @@ const App: React.FC = () => {
                 <div className="text-center text-red-500 py-20">{error}</div>
               ) : filteredResources.length > 0 ? (
                 <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                  <LessonList resources={filteredResources} onView={handleLessonView} />
+                  <LessonList 
+                    resources={filteredResources} 
+                    onView={handleLessonView} 
+                    selectedLanguage={selectedLanguage}
+                  />
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-stone-400 bg-white rounded-3xl border-2 border-dashed border-stone-200">

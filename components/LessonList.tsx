@@ -5,9 +5,15 @@ import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
 interface LessonListProps {
     resources: Resource[];
     onView: (resource: Resource) => void;
+    selectedLanguage: string;
 }
 
-const LessonList: React.FC<LessonListProps> = ({ resources, onView }) => {
+const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLanguage }) => {
+    const getTranslation = (resource: Resource, lang: string) => {
+        return resource.translations.find(t => t.language_code === lang) || 
+               resource.translations.find(t => t.language_code === 'ta') || 
+               resource.translations[0];
+    };
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
 
@@ -46,7 +52,7 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView }) => {
                                 <div className="w-14 h-14 rounded-xl bg-stone-100 dark:bg-stone-800 flex-shrink-0 overflow-hidden relative border border-stone-200 dark:border-stone-700 shadow-sm transition-transform group-hover:scale-105">
                                     <img
                                         src={resource.imagePath || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400'}
-                                        alt={resource.title}
+                                        alt={getTranslation(resource, selectedLanguage)?.title}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400';
@@ -57,16 +63,16 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView }) => {
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <div className="font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors text-lg">
-                                        {resource.title}
+                                    <div className="font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-700 dark:group-hover:text-orange-400 transition-colors text-lg line-clamp-1">
+                                        {getTranslation(resource, selectedLanguage)?.title}
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-tighter bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded">
                                             {resource.category}
                                         </span>
-                                        {resource.authorName && (
+                                        {getTranslation(resource, selectedLanguage)?.authorName && (
                                             <span className="text-xs text-stone-400 dark:text-stone-500 font-medium">
-                                                👤 {resource.authorName}
+                                                👤 {getTranslation(resource, selectedLanguage)?.authorName}
                                             </span>
                                         )}
                                     </div>
