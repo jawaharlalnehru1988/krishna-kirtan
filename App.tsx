@@ -86,6 +86,59 @@ const App: React.FC = () => {
     }
   }, [activeCategory, activeLesson, selectedLanguage, loading]);
 
+  // Dynamic Metadata Sync
+  useEffect(() => {
+    const updateMeta = (property: string, content: string) => {
+      let meta = document.querySelector(`meta[property="${property}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('property', property);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    };
+
+    const updateTwitterMeta = (name: string, content: string) => {
+      let meta = document.querySelector(`meta[property="twitter:${name}"], meta[name="twitter:${name}"]`);
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', `twitter:${name}`);
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', content);
+    };
+
+    if (activeLesson) {
+      const title = activeLesson.title;
+      const description = activeLesson.description || "Sri Krishna Kirtan Music Library";
+      const image = (activeLesson.imagePath || "/lord caitanya.jpeg").replace(/ /g, '%20');
+
+      document.title = `${title} | Sri Krishna Kirtan`;
+      updateMeta('og:title', title);
+      updateMeta('og:description', description);
+      updateMeta('og:image', image);
+      updateMeta('og:url', window.location.href);
+
+      updateTwitterMeta('title', title);
+      updateTwitterMeta('description', description);
+      updateTwitterMeta('image', image);
+    } else {
+      const defaultTitle = "Sri Krishna Kirtan - Music Library";
+      const defaultDesc = "Discover divine kirtans, lyrics, and translations in multiple languages.";
+      const defaultImg = "/lord caitanya.jpeg".replace(/ /g, '%20');
+
+      document.title = "Sri Krishna Kirtan";
+      updateMeta('og:title', defaultTitle);
+      updateMeta('og:description', defaultDesc);
+      updateMeta('og:image', defaultImg);
+      updateMeta('og:url', window.location.origin);
+
+      updateTwitterMeta('title', defaultTitle);
+      updateTwitterMeta('description', defaultDesc);
+      updateTwitterMeta('image', defaultImg);
+    }
+  }, [activeLesson]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
