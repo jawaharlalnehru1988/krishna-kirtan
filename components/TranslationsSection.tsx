@@ -114,11 +114,37 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                                 hr: () => <hr className="my-10 border-t-2 border-dashed border-orange-100 dark:border-stone-800" />,
                             }}
                         >
-                            {(activeTranslation?.lyrics || '')
-                                .replace(/\\n/g, '\n')
-                                .replace(/\r\n/g, '\n')
-                                .replace(/\r/g, '\n')
-                                .trim()}
+                            {(() => {
+                                // 1. Initial cleanup: replace literal \n strings and normalize all line endings to LF
+                                let lyrics = (activeTranslation?.lyrics || '')
+                                    .replace(/\\n/g, '\n')
+                                    .replace(/\r\n/g, '\n')
+                                    .replace(/\r/g, '\n');
+
+                                // 2. Aggressive Unicode Sanitization
+                                // This handles invisible characters and non-standard symbols that break markdown parsers
+                                lyrics = lyrics
+                                    .replace(/\uFEFF/g, '')     // Remove Byte Order Mark (BOM)
+                                    .replace(/\u200B/g, '')     // Remove Zero-Width Space
+                                    .replace(/\u00A0/g, ' ')    // Replace Non-Breaking Space with regular space
+                                    .replace(/\uFF03/g, '#')    // Replace Full-width Hash (＃) with standard hash
+                                    .replace(/\uFF1E/g, '>');   // Replace Full-width Quote (＞) with standard quote
+
+                                // 3. Robust cleaning: Trim each line to prevent accidental indentation-based 
+                                // markdown code blocks (which often causes raw markdown tags to be displayed)
+                                lyrics = lyrics.split('\n').map(line => line.trim()).join('\n');
+
+                                // 4. Reliability: Ensure a blank line exists before headers, rules, and blockquotes
+                                // and explicitly force them to the start of the line.
+                                lyrics = lyrics
+                                    .replace(/\n(#{1,6}\s|---|--|==|>)/g, '\n\n$1')
+                                    .trim();
+
+                                // 5. DEBUG: Log the result for inspection in browser console
+                                console.log("DEBUG [Markdown Fix]:", JSON.stringify(lyrics));
+
+                                return lyrics;
+                            })()}
                         </ReactMarkdown>
                     </div>
                 </div>
