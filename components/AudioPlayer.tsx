@@ -318,7 +318,6 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
                             className="flex items-center gap-2 px-6 py-2 bg-white/5 hover:bg-white/10 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-all border border-white/10 group active:scale-95"
                         >
                             <Download size={16} className="group-hover:translate-y-0.5 transition-transform" />
-                            <span className="hidden sm:inline">Download Audio</span>
                         </button>
                     </div>
                 </div>

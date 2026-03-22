@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import _ReactPlayer from 'react-player';
 const ReactPlayer = _ReactPlayer as any;
 import { ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
-import { Resource } from '../types';
+import { Resource, NavItem } from '../types';
 import AudioPlayer from './AudioPlayer';
 import TranslationsSection from './TranslationsSection';
 
@@ -17,6 +17,7 @@ interface LessonDetailProps {
     isPlaying: boolean;
     setIsPlaying: (playing: boolean) => void;
     selectedLanguage: string;
+    navItems: NavItem[];
 }
 
 const LessonDetail: React.FC<LessonDetailProps> = ({
@@ -28,7 +29,8 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     hasPrevious,
     isPlaying,
     setIsPlaying,
-    selectedLanguage
+    selectedLanguage,
+    navItems
 }) => {
     const [activeLang, setActiveLang] = useState<string>(selectedLanguage);
 
@@ -177,7 +179,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                             <div>
                                 <div className="flex items-center gap-3 mb-3">
                                     <span className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                                        {resource.category}
+                                        {navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.label || resource.category}
                                     </span>
                                 </div>
 
@@ -230,7 +232,9 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                 <div className="space-y-4">
                                     <div>
                                         <span className="text-xs text-stone-500 dark:text-stone-400 uppercase font-bold block mb-1">Category</span>
-                                        <p className="font-medium text-stone-800 dark:text-stone-200 capitalize">{resource.category}</p>
+                                        <p className="font-medium text-stone-800 dark:text-stone-200 capitalize">
+                                            {navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.label || resource.category}
+                                        </p>
                                     </div>
 
                                     <div>

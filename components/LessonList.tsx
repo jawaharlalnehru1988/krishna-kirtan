@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { Resource } from '../types';
+import { Resource, NavItem } from '../types';
 import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface LessonListProps {
     resources: Resource[];
     onView: (resource: Resource) => void;
     selectedLanguage: string;
+    navItems: NavItem[];
 }
 
-const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLanguage }) => {
+const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLanguage, navItems }) => {
     const getTranslation = (resource: Resource, lang: string) => {
         return resource.translations.find(t => t.language_code === lang) || 
                resource.translations.find(t => t.language_code === 'ta') || 
@@ -68,7 +69,7 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLang
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-tighter bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded">
-                                            {resource.category}
+                                            {navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.label || resource.category}
                                         </span>
                                         {getTranslation(resource, selectedLanguage)?.authorName && (
                                             <span className="text-xs text-stone-400 dark:text-stone-500 font-medium">

@@ -14,7 +14,11 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 
 const App: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<Category>('home');
+  const [activeCategory, setActiveCategory] = useState<Category>(() => {
+    if (typeof window === 'undefined') return 'home';
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('category') as Category) || 'home';
+  });
   const [activeLesson, setActiveLesson] = useState<Resource | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
   const [navItems, setNavItems] = useState<NavItem[]>([]);
@@ -25,7 +29,16 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isPlaying, setIsPlaying] = useState(false);
   const [showInactivityPrompt, setShowInactivityPrompt] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('ta');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'ta';
+    const params = new URLSearchParams(window.location.search);
+    return params.get('lang') || 'ta';
+  });
+
+  const hasLessonInUrl = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return new URLSearchParams(window.location.search).has('lesson');
+  }, []);
   const lastActivityTimeRef = useRef<number>(Date.now());
 
   // Theme Sync
@@ -142,13 +155,8 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [kirtansResponse, categoriesResponse] = await Promise.all([
-          axios.get('https://api.askharekrishna.com/api/v1/kirtans/'),
-          axios.get('https://api.askharekrishna.com/api/v1/kirtan-categories/')
-        ]);
-
+        const kirtansResponse = await axios.get('https://api.askharekrishna.com/api/v1/kirtans/');
         const kirtansData = kirtansResponse.data;
-        const categoriesData = categoriesResponse.data;
 
         // Transform API data to Resource type
         const fetchedResources: Resource[] = kirtansData.map((item: any) => {
@@ -176,22 +184,9 @@ const App: React.FC = () => {
         });
 
         setResources(fetchedResources);
-
-        // Build navigation items from categories API
-        const dynamicNavItems: NavItem[] = [
-          { id: 'home', label: 'Home', icon: '🏠' },
-          ...categoriesData.map((cat: any) => ({
-            id: cat.name, // Use name as ID to match resource.category
-            label: cat.name,
-            image: cat.categoryImage,
-            icon: CATEGORY_ICONS[cat.name.toLowerCase()] || CATEGORY_ICONS['default']
-          }))
-        ];
-
-        setNavItems(dynamicNavItems);
         setLoading(false);
       } catch (err) {
-        console.error("Failed to fetch data:", err);
+        console.error("Failed to fetch kirtans:", err);
         setError("Failed to load content. Please try again later.");
         setLoading(false);
       }
@@ -199,6 +194,41 @@ const App: React.FC = () => {
 
     fetchData();
   }, []);
+
+  // Fetch localized categories whenever language changes
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=${selectedLanguage}`);
+        const categoriesData = response.data;
+
+        // Transform API data to NavItem type with localized labels
+        const dynamicNavItems: NavItem[] = [
+          { id: 'home', label: selectedLanguage === 'ta' ? 'முகப்பு' : 'Home', icon: '🏠' },
+          ...categoriesData.map((cat: any) => {
+            // Find stable English name for internal logic (ID and Icons)
+            // If the language is English, 'name' is already stable.
+            // If not, we check the translations list.
+            const englishTranslation = cat.translations?.find((t: any) => t.language_code === 'en');
+            const stableId = englishTranslation?.name || (selectedLanguage === 'en' ? cat.name : cat.id.toString());
+            
+            return {
+              id: stableId,
+              label: cat.name, // Localized name from API
+              image: cat.categoryImage,
+              icon: CATEGORY_ICONS[stableId.toLowerCase()] || CATEGORY_ICONS['default']
+            };
+          })
+        ];
+
+        setNavItems(dynamicNavItems);
+      } catch (err) {
+        console.error("Failed to fetch localized categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, [selectedLanguage]);
 
   const filteredResources = useMemo(() => {
     return resources
@@ -327,7 +357,12 @@ const App: React.FC = () => {
             isPlaying={isPlaying}
             setIsPlaying={setIsPlaying}
             selectedLanguage={selectedLanguage}
+            navItems={navItems}
           />
+        ) : (hasLessonInUrl && loading) ? (
+          <div className="flex-1 flex items-center justify-center py-20 bg-stone-50 dark:bg-stone-950">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+          </div>
         ) : activeCategory === 'home' ? (
           <HomeView
             onStart={setActiveCategory}
@@ -354,6 +389,7 @@ const App: React.FC = () => {
                     resources={filteredResources} 
                     onView={handleLessonView} 
                     selectedLanguage={selectedLanguage}
+                    navItems={navItems}
                   />
                 </div>
               ) : (
