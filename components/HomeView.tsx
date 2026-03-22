@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, NavItem } from '../types';
 import OtherWebsites from './OtherWebsites';
@@ -6,18 +5,73 @@ import OtherWebsites from './OtherWebsites';
 interface HomeViewProps {
   onStart: (category: Category) => void;
   categories: NavItem[];
+  selectedLanguage: string;
 }
 
 const HIDE_OTHER_SITES = true;
 
-const CATEGORY_FALLBACK_DESCRIPTIONS: Record<string, string> = {
-  mridanga: 'The King of instruments. Learn the rhythmic heartbeat of kirtan.',
-  harmonium: 'Master the melodies and ragas that evoke deep devotion.',
-  karatal: 'The golden rhythm that keeps the pace of every congregational chant.',
-  default: 'Explore our collection of devotional lessons and kirtans.'
+const TRANSLATIONS: Record<string, any> = {
+  en: {
+    hero: {
+      title: 'Sri Krishna Kirtan',
+      subtitle: '"Kirtan is the call of the soul for the Supreme Soul."',
+      startBtn: 'Start Listening',
+      exploreBtn: 'Explore Library',
+    },
+    about: {
+      badge: 'Divine Inspiration',
+      heading: 'Teachings and Kirtans of His Divine Grace',
+      quote: '"Simply by chanting this holy name of Hari, one can become free from all the reactions of sinful life. This kirtan movement is the only way to realize God in this age."',
+      description: 'Our library is dedicated to preserving the divine kirtans, bhajans, and prayers shared by A.C. Bhaktivedanta Swami Prabhupada and His Sincere followers. Immerse yourself in the transcendental sound vibration and discover the peace of devotional service through hearing.',
+      author: 'Srila Prabhupada',
+      authorTitle: 'Founder-Acharya of ISKCON',
+    },
+    categories: {
+      heading: 'Immersion in Sound',
+      subtitle: 'Select a category to explore our extensive collection of kirtans, bhajans, and spiritual discourses.',
+      startLink: 'Start Listening ➔',
+    },
+    categoryFallback: {
+      kirtan: 'Congregational chanting of the Holy Names. Experience the ecstasy of Sankirtana.',
+      bhajan: 'Devotional songs and prayers that touch the heart and awaken the soul.',
+      prayer: 'Sacred mantras and appeals for divine grace and guidance.',
+      raga: 'Traditional melodies that set the mood for deep meditation and worship.',
+      default: 'Explore our collection of devotional kirtans, bhajans, and prayers.'
+    }
+  },
+  ta: {
+    hero: {
+      title: 'ஸ்ரீ கிருஷ்ண கீர்த்தனம்',
+      subtitle: '"கீர்த்தனை என்பது பரமாத்மாவை நோக்கிய ஆத்மாவின் அழைப்பு."',
+      startBtn: 'கேட்கத் தொடங்குங்கள்',
+      exploreBtn: 'நூலகத்தை ஆராயுங்கள்',
+    },
+    about: {
+      badge: 'தெய்வீக உத்வேகம்',
+      heading: 'ஸ்ரீல பிரபுபாதரின் போதனைகள் மற்றும் கீர்த்தனைகள்',
+      quote: '"ஹரியின் இந்த திருநாமத்தை உச்சரிப்பதன் மூலம், பாவ வாழ்வின் அனைத்து விளைவுகளிலிருந்தும் விடுபடலாம். இந்த யுகத்தில் கடவுளை உணர்வதற்கு இந்த கீர்த்தனை இயக்கம் மட்டுமே வழி."',
+      description: 'எங்கள் நூலகம் ஏ.சி. பக்திவேதாந்த சுவாமி பிரபுபாதாவால் மற்றும் அவரது சீடர்களால் பகிரப்பட்ட தெய்வீக கீர்த்தனைகள், பஜனைகள் மற்றும் பிரார்த்தனைகளைப் பாதுகாப்பதில் அர்ப்பணிக்கப்பட்டுள்ளது. ஆன்மீக ஒலி அதிர்வுகளில் உங்களை மூழ்கடித்து, கேட்பதன் மூலம் பக்தி சேவையின் அமைதியைக் கண்டறியுங்கள்.',
+      author: 'ஸ்ரீல பிரபுபாதா',
+      authorTitle: 'இஸ்கான் நிறுவனர்-ஆச்சார்யா',
+    },
+    categories: {
+      heading: 'ஒலியில் மூழ்குதல்',
+      subtitle: 'எங்கள் கீர்த்தனைகள், பஜனைகள் மற்றும் ஆன்மீக உரைகளின் விரிவான தொகுப்பை ஆராய ஒரு வகையைத் தேர்ந்தெடுக்கவும்.',
+      startLink: 'கேட்கத் தொடங்குங்கள் ➔',
+    },
+    categoryFallback: {
+      kirtan: 'திருநாமங்களின் கூட்டு சங்கீர்த்தனம். சங்கீர்த்தனத்தின் பேரின்பத்தை அனுபவியுங்கள்.',
+      bhajan: 'இதயத்தைத் தொடும் மற்றும் ஆத்மாவை விழிப்படையச் செய்யும் பக்தி பாடல்கள் மற்றும் பிரார்த்தனைகள்.',
+      prayer: 'தெய்வீக அருள் மற்றும் வழிகாட்டுதலுக்கான புனித மந்திரங்கள் மற்றும் விண்ணப்பங்கள்.',
+      raga: 'ஆழ்ந்த தியானம் மற்றும் வழிபாட்டிற்கான மனநிலையை அமைக்கும் பாரம்பரிய ராகங்கள்.',
+      default: 'எங்கள் பக்தி கீர்த்தனைகள், பஜனைகள் மற்றும் பிரார்த்தனைகளின் தொகுப்பை ஆராயுங்கள்.'
+    }
+  }
 };
 
-const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
+const HomeView: React.FC<HomeViewProps> = ({ onStart, categories, selectedLanguage }) => {
+  const t = TRANSLATIONS[selectedLanguage] || TRANSLATIONS.ta;
+
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Hero Section */}
@@ -31,23 +85,23 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
 
         <div className="relative z-10 text-center px-6 max-w-4xl">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg leading-tight">
-            Sri Krishna Kirtan
+            {t.hero.title}
           </h1>
           <p className="text-xl md:text-2xl text-orange-200 font-medium italic mb-8 drop-shadow">
-            "Kirtan is the call of the soul for the Supreme Soul."
+            {t.hero.subtitle}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button
               onClick={() => onStart(categories[0]?.id || 'kirtan')}
               className="px-8 py-3 bg-orange-600 text-white rounded-full font-bold text-lg hover:bg-orange-700 transition-all hover:scale-105 shadow-xl"
             >
-              Start Hearing
+              {t.hero.startBtn}
             </button>
             <button
               onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-3 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-full font-bold text-lg hover:bg-white/20 transition-all"
             >
-              Explore Library
+              {t.hero.exploreBtn}
             </button>
           </div>
         </div>
@@ -58,16 +112,16 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
             <div className="inline-block px-4 py-1 bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400 rounded-full text-sm font-bold uppercase tracking-widest">
-              Divine Inspiration
+              {t.about.badge}
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
-              Teachings of His Divine Grace
+              {t.about.heading}
             </h2>
             <blockquote className="border-l-4 border-orange-500 pl-6 italic text-2xl text-stone-700 dark:text-stone-300 font-medium">
-              "Simply by chanting this holy name of Hari, one can become free from all the reactions of sinful life. This kirtan movement is the only way to realize God in this age."
+              {t.about.quote}
             </blockquote>
             <p className="text-lg text-stone-600 dark:text-stone-400 leading-relaxed">
-              Our academy is dedicated to preserving the traditional melodies and rhythms established by A.C. Bhaktivedanta Swami Prabhupada. Whether you are picking up a mridanga for the first time or perfecting a complex raga on the harmonium, we are here to support your devotional journey.
+              {t.about.description}
             </p>
             <div className="flex items-center gap-4 pt-4">
               <img
@@ -76,8 +130,8 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
                 className="w-16 h-16 rounded-full object-cover border-2 border-orange-200 dark:border-orange-800 p-0.5 shadow-sm"
               />
               <div>
-                <p className="font-bold text-stone-900 dark:text-stone-100">Srila Prabhupada</p>
-                <p className="text-sm text-stone-500 dark:text-stone-400">Founder-Acharya of ISKCON</p>
+                <p className="font-bold text-stone-900 dark:text-stone-100">{t.about.author}</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">{t.about.authorTitle}</p>
               </div>
             </div>
           </div>
@@ -112,11 +166,11 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
       </section>
 
       {/* Featured Instruments */}
-      <section id="categories" className="py-20 px-6 bg-stone-50 dark:bg-stone-950 transition-colors duration-300">
+      <section id="categories" className="py-20 px-6 bg-stone-50 dark:bg-stone-50/50 dark:bg-stone-950 transition-colors duration-300">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-stone-900 dark:text-stone-100 mb-4">Choose Your Path</h2>
-            <p className="text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">Select a category to begin your training with structured lessons, mantras, and reference guides.</p>
+            <h2 className="text-4xl font-bold text-stone-900 dark:text-stone-100 mb-4">{t.categories.heading}</h2>
+            <p className="text-stone-500 dark:text-stone-400 max-w-2xl mx-auto">{t.categories.subtitle}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -141,10 +195,10 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories }) => {
 
                   <h3 className="text-2xl font-bold text-white mb-2 capitalize">{cat.label}</h3>
                   <p className="text-stone-300 text-sm mb-6 line-clamp-2 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                    {CATEGORY_FALLBACK_DESCRIPTIONS[cat.id.toLowerCase()] || CATEGORY_FALLBACK_DESCRIPTIONS.default}
+                    {t.categoryFallback[cat.id.toLowerCase()] || t.categoryFallback.default}
                   </p>
                   <span className="text-orange-400 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
-                    Start Hearing ➔
+                    {t.categories.startLink}
                   </span>
                 </div>
               </button>

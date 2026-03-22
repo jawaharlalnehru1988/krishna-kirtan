@@ -367,6 +367,7 @@ const App: React.FC = () => {
           <HomeView
             onStart={setActiveCategory}
             categories={navItems.filter(item => item.id !== 'home')}
+            selectedLanguage={selectedLanguage}
           />
         ) : (
           <>
