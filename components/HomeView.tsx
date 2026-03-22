@@ -92,7 +92,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories, selectedLangua
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button
-              onClick={() => onStart(categories[0]?.id || 'kirtan')}
+              onClick={() => onStart(categories[2]?.id || 'kirtan')}
               className="px-8 py-3 bg-orange-600 text-white rounded-full font-bold text-lg hover:bg-orange-700 transition-all hover:scale-105 shadow-xl"
             >
               {t.hero.startBtn}
