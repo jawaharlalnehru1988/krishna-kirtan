@@ -1,8 +1,9 @@
 import React from 'react';
-import { Share2, Check } from 'lucide-react';
+import { Share2, FileDown, Check } from 'lucide-react';
 import { Resource } from '../types';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import { generatePdf } from '../utils/pdfExport';
 
 export const LANGUAGE_LABELS: Record<string, { label: string; emoji: string }> = {
     en: { label: 'English', emoji: '🇺🇸' },
@@ -151,16 +152,105 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
             )}
 
             {/* Bottom Share Section */}
-            <div className="pt-8 border-t border-stone-100 dark:border-stone-800 group/share">
+            <div className="pt-8 border-t border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row gap-4">
+                <button
+                    onClick={() => {
+                        const fileName = resource.title.replace(/\s+/g, '_').toLowerCase();
+                        generatePdf('pdf-export-content', fileName);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-900 dark:text-orange-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-orange-200 dark:border-orange-800/40 hover:shadow-lg hover:scale-[1.01]"
+                >
+                    <FileDown size={22} className="group-hover:-translate-y-1 transition-transform duration-300" />
+                    <span className="text-lg">Download as PDF</span>
+                </button>
+
                 <button
                     onClick={onShare}
-                    className="w-full flex items-center justify-center gap-4 py-5 px-8 bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-900 dark:text-orange-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-orange-200 dark:border-orange-800/40 hover:shadow-lg hover:scale-[1.01]"
+                    className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-stone-100/50 dark:bg-stone-900/20 hover:bg-stone-100 dark:hover:bg-stone-900/40 text-stone-900 dark:text-stone-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-stone-200 dark:border-stone-800/40 hover:shadow-lg hover:scale-[1.01]"
                 >
                     <Share2 size={22} className="group-hover:rotate-12 transition-transform duration-300" />
                     <span className="text-lg">
-                        {showCopied ? 'Link Copied to Clipboard!' : 'Share this Lesson with Others'}
+                        {showCopied ? 'Link Copied!' : 'Share Lesson'}
                     </span>
                 </button>
+            </div>
+
+            {/* Hidden PDF Template (Rendered off-screen for capturing) */}
+            <div 
+                id="pdf-export-content" 
+                style={{ 
+                    position: 'absolute', 
+                    left: '-9999px', 
+                    top: 0, 
+                    width: '800px', 
+                    backgroundColor: 'white',
+                    color: '#000',
+                }}
+                className="p-16"
+            >
+                <div className="mb-12 text-center">
+                    <h1 className="text-4xl font-bold text-orange-900 mb-2">{resource.title}</h1>
+                    <div className="h-1 w-24 bg-orange-300 mx-auto"></div>
+                </div>
+
+                <div className="pdf-markdown-content prose max-w-none">
+                    <ReactMarkdown
+                        remarkPlugins={[remarkBreaks]}
+                        components={{
+                            p: ({ children }) => {
+                                if (React.Children.count(children) === 0) return null;
+                                return (
+                                    <p className="text-xl leading-relaxed text-stone-800 font-medium mb-6 text-center">
+                                        {children}
+                                    </p>
+                                );
+                            },
+                            h1: ({ children }) => (
+                                <h1 className="text-3xl font-bold text-orange-900 mb-8 mt-12 pb-4 border-b-2 border-orange-100 text-center">
+                                    {children}
+                                </h1>
+                            ),
+                            h2: ({ children }) => (
+                                <h2 className="text-2xl font-bold text-orange-800 mb-6 mt-10 p-4 bg-orange-50 rounded-2xl border-l-8 border-orange-500">
+                                    {children}
+                                </h2>
+                            ),
+                            h3: ({ children }) => (
+                                <h3 className="text-xl font-bold text-orange-700 mb-4 mt-8 text-center">
+                                     {children}
+                                </h3>
+                            ),
+                            blockquote: ({ children }) => (
+                                <div className="my-8 py-6 px-10 border-y border-stone-100 bg-stone-50/30 font-serif italic text-2xl leading-relaxed text-stone-700 text-center">
+                                    {children}
+                                </div>
+                            ),
+                            hr: () => <hr className="my-10 border-t-2 border-dashed border-orange-100" />,
+                        }}
+                    >
+                        {(() => {
+                            let lyrics = (activeTranslation?.lyrics || '')
+                                .replace(/\\n/g, '\n')
+                                .replace(/\r\n/g, '\n')
+                                .replace(/\r/g, '\n');
+                            lyrics = lyrics
+                                .replace(/\uFEFF/g, '')
+                                .replace(/\u200B/g, '')
+                                .replace(/\u00A0/g, ' ')
+                                .replace(/\uFF03/g, '#')
+                                .replace(/\uFF1E/g, '>');
+                            lyrics = lyrics.split('\n').map(line => line.trim()).join('\n');
+                            lyrics = lyrics
+                                .replace(/\n(#{1,6}\s|---|--|==|>)/g, '\n\n$1')
+                                .trim();
+                            return lyrics;
+                        })()}
+                    </ReactMarkdown>
+                </div>
+
+                <div className="mt-20 pt-8 border-t border-stone-100 text-center text-stone-400 text-sm italic">
+                    Downloaded from Sri Kirtan Academy
+                </div>
             </div>
         </div>
     );
