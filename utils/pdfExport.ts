@@ -9,9 +9,9 @@ export const generatePdf = async (elementId: string, fileName: string) => {
   }
 
   try {
-    // Increase scale for better resolution
+    // Optimized scale for balance between resolution and file size
     const canvas = await html2canvas(element, {
-      scale: 3, 
+      scale: 2, 
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
@@ -19,29 +19,32 @@ export const generatePdf = async (elementId: string, fileName: string) => {
       windowHeight: element.scrollHeight,
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    // Use JPEG with quality setting for significant size reduction
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'px',
       format: 'a4',
+      compress: true,
     });
 
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    // Handle multi-page if necessary (though usually these prayers are short)
+    // Handle multi-page (usually these prayers are short)
     let heightLeft = pdfHeight;
     let position = 0;
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+    // Use compressed JPEG and 'FAST' optimization
+    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
     heightLeft -= pageHeight;
 
-    while (heightLeft >= 0) {
+    while (heightLeft > 0) {
       position = heightLeft - pdfHeight;
       pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight, undefined, 'FAST');
       heightLeft -= pageHeight;
     }
 
