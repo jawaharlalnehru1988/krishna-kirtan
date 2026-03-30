@@ -25,6 +25,19 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
 
     const audioRef = useRef<HTMLAudioElement>(null);
 
+    // Position Restoration
+    useEffect(() => {
+        if (!url || !audioRef.current) return;
+        
+        const savedTime = localStorage.getItem(`audio_pos_${url}`);
+        if (savedTime) {
+            const time = parseFloat(savedTime);
+            audioRef.current.currentTime = time;
+            // Note: duration might not be loaded yet, so setPlayed might be 0 initially
+            // loadedmetadata will fix this.
+        }
+    }, [url]);
+
     useEffect(() => {
         setLoading(true);
         setPlayed(0);
@@ -37,15 +50,23 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
         }
     }, [volume]);
 
+    // Playback state persistence across refreshes
+    useEffect(() => {
+        sessionStorage.setItem('kirtan_isPlaying', playing.toString());
+    }, [playing]);
+
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
 
         if (playing) {
-            audio.play().catch(err => {
-                console.error("Playback failed:", err);
-                setPlaying(false);
-            });
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.warn("Playback resume failed (likely autoplay policy):", err);
+                    setPlaying(false); // Reset to show play button if blocked
+                });
+            }
         } else {
             audio.pause();
         }
@@ -116,6 +137,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
             const total = audioRef.current.duration;
             if (total > 0) {
                 setPlayed(current / total);
+                
+                // Persist position every ~5 seconds to avoid excessive writes
+                if (Math.floor(current) % 5 === 0) {
+                    localStorage.setItem(`audio_pos_${url}`, current.toString());
+                }
             }
         }
     };

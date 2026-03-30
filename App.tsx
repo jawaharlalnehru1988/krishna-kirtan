@@ -20,14 +20,23 @@ const App: React.FC = () => {
     return (params.get('category') as Category) || 'home';
   });
   const [activeLesson, setActiveLesson] = useState<Resource | null>(null);
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [resources, setResources] = useState<Resource[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const cached = localStorage.getItem('kirtan_resources');
+    return cached ? JSON.parse(cached) : [];
+  });
   const [navItems, setNavItems] = useState<NavItem[]>([]);
+  const [navItemsCache, setNavItemsCache] = useState<Record<string, NavItem[]>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const storedPlayState = sessionStorage.getItem('kirtan_isPlaying');
+    return storedPlayState === 'true';
+  });
   const [showInactivityPrompt, setShowInactivityPrompt] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
     if (typeof window === 'undefined') return 'ta';
@@ -152,8 +161,18 @@ const App: React.FC = () => {
     }
   }, [activeLesson]);
 
+  // Playback state persistence across refreshes
+  useEffect(() => {
+    sessionStorage.setItem('kirtan_isPlaying', isPlaying.toString());
+  }, [isPlaying]);
+
   useEffect(() => {
     const fetchData = async () => {
+      // Hydrate from cache immediately if available
+      if (resources.length > 0) {
+        setLoading(false);
+      }
+
       try {
         const kirtansResponse = await axios.get('https://api.askharekrishna.com/api/v1/kirtans/');
         const kirtansData = kirtansResponse.data;
@@ -184,6 +203,7 @@ const App: React.FC = () => {
         });
 
         setResources(fetchedResources);
+        localStorage.setItem('kirtan_resources', JSON.stringify(fetchedResources));
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch kirtans:", err);
@@ -195,9 +215,15 @@ const App: React.FC = () => {
     fetchData();
   }, []);
 
-  // Fetch localized categories whenever language changes
+  // Fetch localized categories whenever language changes (with caching)
   useEffect(() => {
     const fetchCategories = async () => {
+      // Check in-memory cache first
+      if (navItemsCache[selectedLanguage]) {
+        setNavItems(navItemsCache[selectedLanguage]);
+        return;
+      }
+
       try {
         const response = await axios.get(`https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=${selectedLanguage}`);
         const categoriesData = response.data;
@@ -207,8 +233,6 @@ const App: React.FC = () => {
           { id: 'home', label: selectedLanguage === 'ta' ? 'முகப்பு' : 'Home', icon: '🏠' },
           ...categoriesData.map((cat: any) => {
             // Find stable English name for internal logic (ID and Icons)
-            // If the language is English, 'name' is already stable.
-            // If not, we check the translations list.
             const englishTranslation = cat.translations?.find((t: any) => t.language_code === 'en');
             const stableId = englishTranslation?.name || (selectedLanguage === 'en' ? cat.name : cat.id.toString());
             
@@ -222,6 +246,7 @@ const App: React.FC = () => {
         ];
 
         setNavItems(dynamicNavItems);
+        setNavItemsCache(prev => ({ ...prev, [selectedLanguage]: dynamicNavItems }));
       } catch (err) {
         console.error("Failed to fetch localized categories:", err);
       }
