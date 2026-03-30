@@ -151,30 +151,6 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                 </div>
             )}
 
-            {/* Bottom Share Section */}
-            <div className="pt-8 border-t border-stone-100 dark:border-stone-800 flex flex-col sm:flex-row gap-4">
-                <button
-                    onClick={() => {
-                        const fileName = resource.title.replace(/\s+/g, '_').toLowerCase();
-                        generatePdf('pdf-export-content', fileName);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-900 dark:text-orange-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-orange-200 dark:border-orange-800/40 hover:shadow-lg hover:scale-[1.01]"
-                >
-                    <FileDown size={22} className="group-hover:-translate-y-1 transition-transform duration-300" />
-                    <span className="text-lg">Download as PDF</span>
-                </button>
-
-                <button
-                    onClick={onShare}
-                    className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-stone-100/50 dark:bg-stone-900/20 hover:bg-stone-100 dark:hover:bg-stone-900/40 text-stone-900 dark:text-stone-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-stone-200 dark:border-stone-800/40 hover:shadow-lg hover:scale-[1.01]"
-                >
-                    <Share2 size={22} className="group-hover:rotate-12 transition-transform duration-300" />
-                    <span className="text-lg">
-                        {showCopied ? 'Link Copied!' : 'Share Lesson'}
-                    </span>
-                </button>
-            </div>
-
             {/* Hidden PDF Template (Rendered off-screen for capturing) */}
             <div 
                 id="pdf-export-content" 

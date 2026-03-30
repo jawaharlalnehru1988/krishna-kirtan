@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import _ReactPlayer from 'react-player';
 const ReactPlayer = _ReactPlayer as any;
-import { ChevronLeft, ChevronRight, Share2, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2, Check, FileDown } from 'lucide-react';
 import { Resource, NavItem } from '../types';
 import AudioPlayer from './AudioPlayer';
 import TranslationsSection from './TranslationsSection';
+import { generatePdf } from '../utils/pdfExport';
 
 interface LessonDetailProps {
     resource: Resource;
@@ -190,7 +191,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     <button
                                         onClick={handleShare}
                                         className="mt-1 p-2 text-stone-400 dark:text-stone-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-full transition-all relative group"
-                                        title="Share lesson"
+                                        title="Share Lyrics"
                                     >
                                         {showCopied ? <Check size={24} className="text-green-600" /> : <Share2 size={24} />}
                                         {showCopied && (
@@ -211,6 +212,30 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                 <p className="text-lg text-stone-600 dark:text-stone-400 leading-relaxed whitespace-pre-line mb-8">
                                     {activeTranslation?.description || resource.description}
                                 </p>
+
+                                {/* Action Buttons - Moved to top near title as requested */}
+                                <div className="flex flex-col sm:flex-row gap-4 mb-10">
+                                    <button
+                                        onClick={() => {
+                                            const fileName = resource.title.replace(/\s+/g, '_').toLowerCase();
+                                            generatePdf('pdf-export-content', fileName);
+                                        }}
+                                        className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-900 dark:text-orange-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-orange-200 dark:border-orange-800/40 hover:shadow-lg hover:scale-[1.01]"
+                                    >
+                                        <FileDown size={22} className="group-hover:-translate-y-1 transition-transform duration-300" />
+                                        <span className="text-lg">Download as PDF</span>
+                                    </button>
+
+                                    <button
+                                        onClick={handleShare}
+                                        className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-stone-100/50 dark:bg-stone-900/20 hover:bg-stone-100 dark:hover:bg-stone-900/40 text-stone-900 dark:text-stone-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-stone-200 dark:border-stone-800/40 hover:shadow-lg hover:scale-[1.01]"
+                                    >
+                                        <Share2 size={22} className="group-hover:rotate-12 transition-transform duration-300" />
+                                        <span className="text-lg">
+                                            {showCopied ? 'Link Copied!' : 'Share Lyrics'}
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
 
                             <TranslationsSection
