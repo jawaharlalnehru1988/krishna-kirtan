@@ -34,6 +34,8 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     navItems
 }) => {
     const [activeLang, setActiveLang] = useState<string>(selectedLanguage);
+    const [showCopied, setShowCopied] = useState(false);
+    const activeTranslation = resource.translations.find(t => t.language_code === activeLang) || resource.translations[0];
 
     // Sync activeLang with selectedLanguage if user hasn't manually switched in this view
     React.useEffect(() => {
@@ -41,26 +43,78 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
             setActiveLang(selectedLanguage);
         }
     }, [selectedLanguage, resource]);
-    const [showCopied, setShowCopied] = useState(false);
 
-    const activeTranslation = resource.translations.find(t => t.language_code === activeLang) || resource.translations[0];
+    // Update document metadata for social sharing previews
+    React.useEffect(() => {
+        const title = activeTranslation?.title || resource.title;
+        const description = activeTranslation?.description || resource.description || 'Discover divine kirtans, lyrics, and translations.';
+        const imageUrl = resource.imagePath 
+            ? (resource.imagePath.startsWith('http') ? resource.imagePath : window.location.origin + resource.imagePath) 
+            : `${window.location.origin}/lord caitanya.jpeg`;
 
-    const handleShare = async () => {
-        const shareData = {
-            title: activeTranslation?.title || resource.title,
-            text: `Check out this lesson: ${activeTranslation?.title || resource.title}`,
-            url: window.location.href,
+        document.title = `${title} | Sri Krishna Kirtan`;
+
+        // Helper to update or create meta tags
+        const updateMeta = (property: string, content: string, attr: 'property' | 'name' = 'property') => {
+            let element = document.querySelector(`meta[${attr}="${property}"]`);
+            if (!element) {
+                element = document.createElement('meta');
+                element.setAttribute(attr, property);
+                document.head.appendChild(element);
+            }
+            element.setAttribute('content', content);
         };
 
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        updateMeta('og:title', title);
+        updateMeta('og:description', description);
+        updateMeta('og:image', imageUrl);
+        updateMeta('og:url', window.location.href);
+        updateMeta('twitter:title', title, 'name');
+        updateMeta('twitter:description', description, 'name');
+        updateMeta('twitter:image', imageUrl, 'name');
+    }, [resource, activeTranslation]);
+
+    const handleShare = async () => {
+        const title = activeTranslation?.title || resource.title;
+        const text = `Check out this lesson: ${title}`;
+        const url = window.location.href;
+        
+        const shareData: any = {
+            title,
+            text,
+            url,
+        };
+
+        // Attempt to include image file for better WhatsApp/Social previews if supported
+        if (resource.imagePath && navigator.canShare) {
+            try {
+                const imageUrl = resource.imagePath.startsWith('http') 
+                    ? resource.imagePath 
+                    : window.location.origin + resource.imagePath;
+                
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const file = new File([blob], 'lesson-thumbnail.jpg', { type: blob.type });
+                
+                if (navigator.canShare({ files: [file] })) {
+                    shareData.files = [file];
+                }
+            } catch (err) {
+                console.warn('Metadata: Image fetch for share failed (likely CORS). Falling back to URL-only share.', err);
+            }
+        }
+
+        if (navigator.share) {
             try {
                 await navigator.share(shareData);
             } catch (err) {
-                console.error('Error sharing:', err);
+                if ((err as Error).name !== 'AbortError') {
+                    console.error('Error sharing:', err);
+                }
             }
         } else {
             try {
-                await navigator.clipboard.writeText(window.location.href);
+                await navigator.clipboard.writeText(url);
                 setShowCopied(true);
                 setTimeout(() => setShowCopied(false), 2000);
             } catch (err) {

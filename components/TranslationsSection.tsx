@@ -76,39 +76,39 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                                     // If children is empty or only whitespace, don't render an empty paragraph
                                     if (React.Children.count(children) === 0) return null;
                                     return (
-                                        <p className="text-xl md:text-2xl leading-relaxed text-stone-800 dark:text-stone-300 font-medium break-words mb-8 last:mb-0">
+                                        <p className="text-base md:text-lg leading-relaxed text-stone-800 dark:text-stone-300 font-medium break-words mb-6 last:mb-0">
                                             {children}
                                         </p>
                                     );
                                 },
                                 h1: ({ children }) => (
-                                    <h4 className="text-3xl font-bold text-stone-900 dark:text-stone-100 mb-8 mt-12 pb-4 border-b-2 border-orange-100 dark:border-stone-800 font-playfair first:mt-0">
+                                    <h4 className="text-2xl font-bold text-stone-900 dark:text-stone-100 mb-6 mt-10 pb-3 border-b-2 border-orange-100 dark:border-stone-800 font-playfair first:mt-0">
                                         {children}
                                     </h4>
                                 ),
                                 h2: ({ children }) => (
-                                    <h5 className="text-2xl font-bold text-orange-900 dark:text-orange-300 mb-6 mt-10 flex items-center gap-3 font-playfair bg-orange-50/50 dark:bg-stone-800/30 p-4 rounded-2xl border-l-4 border-orange-500">
+                                    <h5 className="text-xl font-bold text-orange-900 dark:text-orange-300 mb-5 mt-8 flex items-center gap-3 font-playfair bg-orange-50/50 dark:bg-stone-800/30 p-3 rounded-xl border-l-4 border-orange-500">
                                         {children}
                                     </h5>
                                 ),
                                 h3: ({ children }) => (
-                                    <h6 className="text-xl font-bold text-orange-800 dark:text-orange-400 mb-4 mt-8 font-playfair flex items-center gap-2">
+                                    <h6 className="text-lg font-bold text-orange-800 dark:text-orange-400 mb-3 mt-6 font-playfair flex items-center gap-2">
                                          {children}
                                     </h6>
                                 ),
                                 h4: ({ children }) => (
-                                    <h6 className="text-lg font-bold text-stone-700 dark:text-stone-300 mb-3 mt-6 font-playfair">
+                                    <h6 className="text-base font-bold text-stone-700 dark:text-stone-300 mb-2 mt-4 font-playfair">
                                         {children}
                                     </h6>
                                 ),
                                 blockquote: ({ children }) => (
-                                    <blockquote className="border-l-[12px] border-orange-400/30 dark:border-orange-900/40 pl-8 py-8 my-10 bg-orange-50/20 dark:bg-stone-900/40 rounded-r-[2.5rem] text-xl md:text-2xl leading-loose italic text-stone-700 dark:text-stone-200 font-serif relative transition-all hover:bg-orange-50/30 dark:hover:bg-stone-900/60 shadow-inner">
-                                        <span className="absolute -top-4 -left-2 text-6xl text-orange-200/50 dark:text-orange-900/20 font-serif select-none">"</span>
+                                    <blockquote className="border-l-[8px] border-orange-400/30 dark:border-orange-900/40 pl-6 py-6 my-8 bg-orange-50/20 dark:bg-stone-900/40 rounded-r-2xl text-base md:text-lg leading-loose italic text-stone-700 dark:text-stone-200 font-serif relative transition-all hover:bg-orange-50/30 dark:hover:bg-stone-900/60 shadow-inner">
+                                        <span className="absolute -top-3 -left-1 text-4xl text-orange-200/50 dark:text-orange-900/20 font-serif select-none">"</span>
                                         {children}
                                     </blockquote>
                                 ),
-                                ul: ({ children }) => <ul className="list-disc pl-8 mb-6 space-y-3 text-lg text-stone-700 dark:text-stone-400">{children}</ul>,
-                                ol: ({ children }) => <ol className="list-decimal pl-8 mb-6 space-y-3 text-lg text-stone-700 dark:text-stone-400">{children}</ol>,
+                                ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-2 text-base text-stone-700 dark:text-stone-400">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-2 text-base text-stone-700 dark:text-stone-400">{children}</ol>,
                                 li: ({ children }) => <li className="pl-2">{children}</li>,
                                 strong: ({ children }) => <strong className="font-extrabold text-orange-950 dark:text-orange-400">{children}</strong>,
                                 em: ({ children }) => <em className="italic text-stone-600 dark:text-stone-500 font-serif">{children}</em>,
@@ -176,28 +176,28 @@ const TranslationsSection: React.FC<TranslationsSectionProps> = ({
                             p: ({ children }) => {
                                 if (React.Children.count(children) === 0) return null;
                                 return (
-                                    <p className="text-xl leading-relaxed text-stone-800 font-medium mb-6 text-center">
+                                    <p className="text-base leading-relaxed text-stone-800 font-medium mb-4 text-center">
                                         {children}
                                     </p>
                                 );
                             },
                             h1: ({ children }) => (
-                                <h1 className="text-3xl font-bold text-orange-900 mb-8 mt-12 pb-4 border-b-2 border-orange-100 text-center">
+                                <h1 className="text-2xl font-bold text-orange-900 mb-6 mt-8 pb-3 border-b-2 border-orange-100 text-center">
                                     {children}
                                 </h1>
                             ),
                             h2: ({ children }) => (
-                                <h2 className="text-2xl font-bold text-orange-800 mb-6 mt-10 p-4 bg-orange-50 rounded-2xl border-l-8 border-orange-500">
+                                <h2 className="text-xl font-bold text-orange-800 mb-4 mt-6 p-3 bg-orange-50 rounded-xl border-l-4 border-orange-500">
                                     {children}
                                 </h2>
                             ),
                             h3: ({ children }) => (
-                                <h3 className="text-xl font-bold text-orange-700 mb-4 mt-8 text-center">
+                                <h3 className="text-lg font-bold text-orange-700 mb-3 mt-6 text-center">
                                      {children}
                                 </h3>
                             ),
                             blockquote: ({ children }) => (
-                                <div className="my-8 py-6 px-10 border-y border-stone-100 bg-stone-50/30 font-serif italic text-2xl leading-relaxed text-stone-700 text-center">
+                                <div className="my-6 py-4 px-8 border-y border-stone-100 bg-stone-50/30 font-serif italic text-lg leading-relaxed text-stone-700 text-center">
                                     {children}
                                 </div>
                             ),
