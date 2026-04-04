@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { Category, Resource, NavItem } from './types';
@@ -38,6 +40,7 @@ const App: React.FC = () => {
     return storedPlayState === 'true';
   });
   const [showInactivityPrompt, setShowInactivityPrompt] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
     if (typeof window === 'undefined') return 'ta';
     const params = new URLSearchParams(window.location.search);
@@ -49,6 +52,10 @@ const App: React.FC = () => {
     return new URLSearchParams(window.location.search).has('lesson');
   }, []);
   const lastActivityTimeRef = useRef<number>(Date.now());
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Theme Sync
   useEffect(() => {
@@ -174,7 +181,7 @@ const App: React.FC = () => {
       }
 
       try {
-        const kirtansResponse = await axios.get('https://api.askharekrishna.com/api/v1/kirtans/');
+        const kirtansResponse = await axios.get('/api/kirtans');
         const kirtansData = kirtansResponse.data;
 
         // Transform API data to Resource type
@@ -225,7 +232,7 @@ const App: React.FC = () => {
       }
 
       try {
-        const response = await axios.get(`https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=${selectedLanguage}`);
+        const response = await axios.get(`/api/kirtan-categories?lang=${selectedLanguage}`);
         const categoriesData = response.data;
 
         // Transform API data to NavItem type with localized labels
@@ -342,6 +349,14 @@ const App: React.FC = () => {
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex flex-col relative transition-colors duration-300">

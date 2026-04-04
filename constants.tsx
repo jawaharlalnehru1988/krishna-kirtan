@@ -30,6 +30,7 @@ export const MOCK_RESOURCES: Resource[] = [
     videoPath: null,
     translations: [],
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    order: 0
   }
 ];

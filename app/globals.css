@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Playfair Display', serif;
+}
+
+.bg-spiritual-gold {
+  background-color: #f6e05e;
+}
+
+.text-spiritual-maroon {
+  color: #742a2a;
+}
+
+.border-spiritual-gold {
+  border-color: #f6e05e;
+}
