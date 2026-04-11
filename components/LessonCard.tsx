@@ -1,22 +1,24 @@
-
 import React from 'react';
-import { Resource } from '../types';
+import { Resource, NavItem } from '../types';
 
 interface LessonCardProps {
   resource: Resource;
   onView: (resource: Resource) => void;
+  navItems: NavItem[];
 }
 
-const LessonCard: React.FC<LessonCardProps> = ({ resource, onView }) => {
+const LessonCard: React.FC<LessonCardProps> = ({ resource, onView, navItems }) => {
+  const displayImage = resource.imagePath || navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.image || '/lord caitanya.jpeg';
+
   return (
     <div className="bg-white dark:bg-stone-900 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden hover:shadow-md transition-all duration-300 group">
       <div className="relative h-48 overflow-hidden cursor-pointer" onClick={() => onView(resource)}>
         <img
-          src={resource.imagePath || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400'}
+          src={displayImage}
           alt={resource.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400';
+            (e.target as HTMLImageElement).src = '/lord caitanya.jpeg';
           }}
         />
 
