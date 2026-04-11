@@ -140,7 +140,8 @@ const App: React.FC = () => {
     if (activeLesson) {
       const title = activeLesson.title;
       const description = activeLesson.description || "Sri Krishna Kirtan Music Library";
-      const image = (activeLesson.imagePath || "/lord caitanya.jpeg").replace(/ /g, '%20');
+      const categoryItem = navItems.find(item => item.id.toLowerCase() === activeLesson.category.toLowerCase());
+      const image = (activeLesson.imagePath || categoryItem?.image || "/lord caitanya.jpeg").replace(/ /g, '%20');
 
       document.title = `${title} | Sri Krishna Kirtan`;
       updateMeta('og:title', title);
@@ -194,7 +195,7 @@ const App: React.FC = () => {
             id: item.id,
             category: item.category,
             audioPath: item.audioPath,
-            imagePath: item.imagePath,
+            imagePath: item.imagePath || item.image || item.categoryImage || null,
             videoPath: item.videoPath,
             translations: translations,
             created_at: item.created_at,

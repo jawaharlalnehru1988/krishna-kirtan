@@ -48,8 +48,10 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     React.useEffect(() => {
         const title = activeTranslation?.title || resource.title;
         const description = activeTranslation?.description || resource.description || 'Discover divine kirtans, lyrics, and translations.';
-        const imageUrl = resource.imagePath 
-            ? (resource.imagePath.startsWith('http') ? resource.imagePath : window.location.origin + resource.imagePath) 
+        const categoryItem = navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase());
+        const rawImagePath = resource.imagePath || categoryItem?.image;
+        const imageUrl = rawImagePath 
+            ? (rawImagePath.startsWith('http') ? rawImagePath : window.location.origin + rawImagePath) 
             : `${window.location.origin}/lord caitanya.jpeg`;
 
         document.title = `${title} | Sri Krishna Kirtan`;
@@ -88,9 +90,10 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
         // Attempt to include image file for better WhatsApp/Social previews if supported
         if (resource.imagePath && navigator.canShare) {
             try {
-                const imageUrl = resource.imagePath.startsWith('http') 
-                    ? resource.imagePath 
-                    : window.location.origin + resource.imagePath;
+                const rawImagePath = resource.imagePath || navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.image;
+                const imageUrl = (rawImagePath && rawImagePath.startsWith('http')) 
+                    ? rawImagePath 
+                    : window.location.origin + (rawImagePath || '/lord caitanya.jpeg');
                 
                 const response = await fetch(imageUrl);
                 const blob = await response.blob();
@@ -158,75 +161,84 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                 <div className="max-w-5xl mx-auto px-6 py-8">
 
                     {/* Main Media Section */}
-                    {resource.videoPath ? (
-                        <div className="aspect-video w-full bg-stone-900 rounded-2xl overflow-hidden shadow-2xl mb-8 relative border border-stone-800">
-                            {(ReactPlayer as any) && (
-                                <ReactPlayer
-                                    url={resource.videoPath || ''}
-                                    width="100%"
-                                    height="100%"
-                                    controls={true}
-                                    playing={isPlaying}
-                                    onEnded={onNext}
-                                    config={{
-                                        youtube: {
-                                            playerVars: {
-                                                showinfo: 1,
-                                                autoplay: 1
-                                            }
-                                        } as any
-                                    }}
-                                />
-                            )}
-                        </div>
-                    ) : (
-                        <div className="w-full bg-gradient-to-br from-stone-900 to-stone-800 rounded-2xl overflow-hidden shadow-2xl mb-8 relative min-h-[320px] flex items-center justify-center p-8 border border-stone-800">
-                            {resource.imagePath ? (
-                                <div className="absolute inset-0">
-                                    <img
-                                        src={resource.imagePath}
-                                        alt={activeTranslation?.title || resource.title}
-                                        className="w-full h-full object-cover opacity-40 blur-[2px]"
-                                    />
-                                    <div className="absolute inset-0 bg-black/40"></div>
+                    {(() => {
+                        const categoryItem = navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase());
+                        const displayImage = resource.imagePath || categoryItem?.image;
+                        
+                        if (resource.videoPath) {
+                            return (
+                                <div className="aspect-video w-full bg-stone-900 rounded-2xl overflow-hidden shadow-2xl mb-8 relative border border-stone-800">
+                                    {(ReactPlayer as any) && (
+                                        <ReactPlayer
+                                            url={resource.videoPath || ''}
+                                            width="100%"
+                                            height="100%"
+                                            controls={true}
+                                            playing={isPlaying}
+                                            onEnded={onNext}
+                                            config={{
+                                                youtube: {
+                                                    playerVars: {
+                                                        showinfo: 1,
+                                                        autoplay: 1
+                                                    }
+                                                } as any
+                                            }}
+                                        />
+                                    )}
                                 </div>
-                            ) : (
-                                <div className="absolute inset-0 opacity-30">
-                                    <div className="absolute top-0 -left-10 w-72 h-72 bg-orange-600/20 rounded-full blur-3xl"></div>
-                                    <div className="absolute bottom-0 -right-10 w-72 h-72 bg-stone-500/10 rounded-full blur-3xl"></div>
-                                </div>
-                            )}
+                            );
+                        }
 
-                            <div className="relative z-10 w-full max-w-xl text-center">
-                                {resource.imagePath && (
-                                    <div className="mb-6 inline-flex items-center justify-center w-32 h-32 rounded-2xl overflow-hidden border-2 border-orange-500/50 shadow-[0_0_30px_rgba(234,88,12,0.3)]">
-                                        <img src={resource?.imagePath} alt={activeTranslation?.title || resource.title} className="w-full h-full object-cover" />
+                        return (
+                            <div className="w-full bg-gradient-to-br from-stone-900 to-stone-800 rounded-2xl overflow-hidden shadow-2xl mb-8 relative min-h-[320px] flex items-center justify-center p-8 border border-stone-800">
+                                {displayImage ? (
+                                    <div className="absolute inset-0">
+                                        <img
+                                            src={displayImage}
+                                            alt={activeTranslation?.title || resource.title}
+                                            className="w-full h-full object-cover opacity-40 blur-[2px]"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40"></div>
+                                    </div>
+                                ) : (
+                                    <div className="absolute inset-0 opacity-30">
+                                        <div className="absolute top-0 -left-10 w-72 h-72 bg-orange-600/20 rounded-full blur-3xl"></div>
+                                        <div className="absolute bottom-0 -right-10 w-72 h-72 bg-stone-500/10 rounded-full blur-3xl"></div>
                                     </div>
                                 )}
-                                <h2 className="text-2xl font-bold text-white mb-2">{activeTranslation?.title || resource?.title || 'Kirtan Audio'}</h2>
-                                <p className="text-stone-400 mb-8 italic text-sm line-clamp-1">
-                                    {activeTranslation?.description || resource?.description
-                                        ? ((activeTranslation?.description || resource.description).length > 40
-                                            ? `${(activeTranslation?.description || resource.description).substring(0, 40)}...`
-                                            : (activeTranslation?.description || resource.description))
-                                        : 'Listen and practice this devotional kirtan.'}
-                                </p>
 
-                                <div className="w-full">
-                                    <AudioPlayer
-                                        url={resource.audioPath || ''}
-                                        title={activeTranslation?.title || resource.title}
-                                        onEnded={onNext}
-                                        onNext={onNext}
-                                        onPrevious={onPrevious}
-                                        resource={resource}
-                                        playing={isPlaying}
-                                        setPlaying={setIsPlaying}
-                                    />
+                                <div className="relative z-10 w-full max-w-xl text-center">
+                                    {displayImage && (
+                                        <div className="mb-6 inline-flex items-center justify-center w-40 h-40 rounded-2xl overflow-hidden border-2 border-orange-500/50 shadow-[0_0_30px_rgba(234,88,12,0.3)] bg-stone-800">
+                                            <img src={displayImage} alt={activeTranslation?.title || resource.title} className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                    <h2 className="text-2xl font-bold text-white mb-2">{activeTranslation?.title || resource?.title || 'Kirtan Audio'}</h2>
+                                    <p className="text-stone-400 mb-8 italic text-sm line-clamp-1">
+                                        {activeTranslation?.description || resource?.description
+                                            ? ((activeTranslation?.description || resource.description).length > 40
+                                                ? `${(activeTranslation?.description || resource.description).substring(0, 40)}...`
+                                                : (activeTranslation?.description || resource.description))
+                                            : 'Listen and practice this devotional kirtan.'}
+                                    </p>
+
+                                    <div className="w-full">
+                                        <AudioPlayer
+                                            url={resource.audioPath || ''}
+                                            title={activeTranslation?.title || resource.title}
+                                            onEnded={onNext}
+                                            onNext={onNext}
+                                            onPrevious={onPrevious}
+                                            resource={resource}
+                                            playing={isPlaying}
+                                            setPlaying={setIsPlaying}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         {/* Primary Content */}

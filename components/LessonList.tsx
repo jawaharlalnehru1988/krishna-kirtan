@@ -52,11 +52,11 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLang
                             <div className="flex items-center gap-5">
                                 <div className="w-14 h-14 rounded-xl bg-stone-100 dark:bg-stone-800 flex-shrink-0 overflow-hidden relative border border-stone-200 dark:border-stone-700 shadow-sm transition-transform group-hover:scale-105">
                                     <img
-                                        src={resource.imagePath || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400'}
+                                        src={resource.imagePath || navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.image || '/lord caitanya.jpeg'}
                                         alt={getTranslation(resource, selectedLanguage)?.title}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400';
+                                            (e.target as HTMLImageElement).src = '/lord caitanya.jpeg';
                                         }}
                                     />
                                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
