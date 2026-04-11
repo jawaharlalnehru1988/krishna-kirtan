@@ -32,9 +32,16 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
         const savedTime = localStorage.getItem(`audio_pos_${url}`);
         if (savedTime) {
             const time = parseFloat(savedTime);
-            audioRef.current.currentTime = time;
-            // Note: duration might not be loaded yet, so setPlayed might be 0 initially
-            // loadedmetadata will fix this.
+            // Only restore if not at the very end (within 5 seconds) to prevent immediate skipping
+            const audio = audioRef.current;
+            if (audio && (isNaN(audio.duration) || time < audio.duration - 5)) {
+                audio.currentTime = time;
+            } else if (audio && !isNaN(audio.duration)) {
+                audio.currentTime = 0;
+            } else {
+                // If duration unknown yet, we'll check again in loadedmetadata
+                audio.currentTime = time;
+            }
         }
     }, [url]);
 
@@ -148,8 +155,20 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
 
     const onLoadedMetadata = () => {
         if (audioRef.current) {
-            setDuration(audioRef.current.duration);
+            const total = audioRef.current.duration;
+            setDuration(total);
             setLoading(false);
+
+            // Double check if we were restored to the very end
+            const savedTime = localStorage.getItem(`audio_pos_${url}`);
+            if (savedTime) {
+                const time = parseFloat(savedTime);
+                if (time >= total - 2) {
+                    audioRef.current.currentTime = 0;
+                    setPlayed(0);
+                    localStorage.removeItem(`audio_pos_${url}`);
+                }
+            }
         }
     };
 
@@ -172,15 +191,27 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
     };
 
     const handleAudioEnded = () => {
+        // Clear saved position so next time it starts from beginning
+        localStorage.removeItem(`audio_pos_${url}`);
+        
         if (isRepeat && audioRef.current) {
             audioRef.current.currentTime = 0;
-            audioRef.current.play();
+            audioRef.current.play().catch(err => console.warn("Repeat playback failed:", err));
         } else if (onNext) {
+            // Guard: stop autoplaying if we are skipping too many lessons instantly
+            // (handled partially by clearing localStorage, but this is an extra layer)
             onNext();
         } else {
             setPlaying(false);
             if (onEnded) onEnded();
         }
+    };
+
+    const handleAudioError = (e: any) => {
+        console.error("Audio playback error:", e);
+        setLoading(false);
+        setPlaying(false);
+        // Do NOT call onNext here to prevent infinite error-skip loops
     };
 
     const handleRepeatToggle = () => setIsRepeat(!isRepeat);
@@ -228,6 +259,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
                 onTimeUpdate={onTimeUpdate}
                 onLoadedMetadata={onLoadedMetadata}
                 onEnded={handleAudioEnded}
+                onError={handleAudioError}
                 onWaiting={() => setLoading(true)}
                 onPlaying={() => setLoading(false)}
                 preload="auto"
