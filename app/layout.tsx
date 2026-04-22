@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import GoogleAnalytics from '../components/GoogleAnalytics';
+import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>
+        <FloatingWhatsApp />
       </body>
     </html>
   );
