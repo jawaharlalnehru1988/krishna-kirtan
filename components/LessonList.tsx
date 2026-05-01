@@ -16,7 +16,7 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLang
                resource.translations[0];
     };
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 8;
+    const itemsPerPage = 25;
 
     const totalPages = Math.ceil(resources.length / itemsPerPage);
 
