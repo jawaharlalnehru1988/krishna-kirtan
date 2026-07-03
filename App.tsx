@@ -6,7 +6,6 @@ import { Category, Resource, NavItem } from './types';
 import LessonList from './components/LessonList';
 import LessonDetail from './components/LessonDetail';
 import HomeView from './components/HomeView';
-import InactivityPrompt from './components/InactivityPrompt';
 
 import { Menu, X } from 'lucide-react';
 import { CATEGORY_ICONS } from './constants';
@@ -39,7 +38,6 @@ const App: React.FC = () => {
     const storedPlayState = sessionStorage.getItem('kirtan_isPlaying');
     return storedPlayState === 'true';
   });
-  const [showInactivityPrompt, setShowInactivityPrompt] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
     if (typeof window === 'undefined') return 'ta';
@@ -51,7 +49,6 @@ const App: React.FC = () => {
     if (typeof window === 'undefined') return false;
     return new URLSearchParams(window.location.search).has('lesson');
   }, []);
-  const lastActivityTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
     setIsHydrated(true);
@@ -275,59 +272,82 @@ const App: React.FC = () => {
       .sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [activeCategory, searchQuery, resources]);
 
-  // Inactivity tracking logic
-  useEffect(() => {
-    const handleActivity = () => {
-      lastActivityTimeRef.current = Date.now();
-    };
-
-    window.addEventListener('mousemove', handleActivity);
-    window.addEventListener('keydown', handleActivity);
-    window.addEventListener('scroll', handleActivity);
-    window.addEventListener('touchstart', handleActivity);
-    window.addEventListener('click', handleActivity);
-
-    const interval = setInterval(() => {
-      const INACTIVITY_THRESHOLD = 45 * 60 * 1000; // 45 minutes
-      if (isPlaying && !showInactivityPrompt && (Date.now() - lastActivityTimeRef.current > INACTIVITY_THRESHOLD)) {
-        setShowInactivityPrompt(true);
-      }
-    }, 30000); // Check every 30 seconds
-
-    return () => {
-      window.removeEventListener('mousemove', handleActivity);
-      window.removeEventListener('keydown', handleActivity);
-      window.removeEventListener('scroll', handleActivity);
-      window.removeEventListener('touchstart', handleActivity);
-      window.removeEventListener('click', handleActivity);
-      clearInterval(interval);
-    };
-  }, [isPlaying, showInactivityPrompt]);
-
-  const handleInactivityContinue = () => {
-    lastActivityTimeRef.current = Date.now();
-    setShowInactivityPrompt(false);
-  };
-
-  const handleInactivityStop = () => {
-    setIsPlaying(false);
-    setShowInactivityPrompt(false);
-  };
 
   const activeNavItem = navItems.find(item => item.id === activeCategory);
 
   const handleNextLesson = () => {
     if (!activeLesson || filteredResources.length === 0) return;
     const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
-    const nextIndex = (currentIndex + 1) % filteredResources.length;
-    setActiveLesson(filteredResources[nextIndex]);
+    
+    if (currentIndex < filteredResources.length - 1) {
+      // Go to next lesson in current category
+      setActiveLesson(filteredResources[currentIndex + 1]);
+    } else {
+      // Reached the end of the current category. Find the next category with resources.
+      const currentCategoryIndex = navItems.findIndex(item => item.id === activeCategory);
+      let nextCategoryFound = false;
+      let checkIndex = currentCategoryIndex + 1;
+      
+      for (let i = 0; i < navItems.length - 1; i++) {
+        if (checkIndex >= navItems.length) checkIndex = 1; // Wrap to 1 (skip home)
+        if (checkIndex === 0) checkIndex = 1;
+        
+        const nextCategory = navItems[checkIndex].id;
+        const nextCategoryResources = resources
+          .filter(res => res.category.toLowerCase() === nextCategory.toLowerCase())
+          .sort((a, b) => (a.order || 0) - (b.order || 0));
+          
+        if (nextCategoryResources.length > 0) {
+          setActiveCategory(nextCategory as Category);
+          setActiveLesson(nextCategoryResources[0]);
+          nextCategoryFound = true;
+          break;
+        }
+        checkIndex++;
+      }
+      
+      if (!nextCategoryFound) {
+        // Fallback to start of current list if no other categories have items
+        setActiveLesson(filteredResources[0]);
+      }
+    }
   };
 
   const handlePreviousLesson = () => {
     if (!activeLesson || filteredResources.length === 0) return;
     const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
-    const prevIndex = (currentIndex - 1 + filteredResources.length) % filteredResources.length;
-    setActiveLesson(filteredResources[prevIndex]);
+    
+    if (currentIndex > 0) {
+      // Go to previous lesson in current category
+      setActiveLesson(filteredResources[currentIndex - 1]);
+    } else {
+      // Go to previous category's LAST lesson
+      const currentCategoryIndex = navItems.findIndex(item => item.id === activeCategory);
+      let prevCategoryFound = false;
+      let checkIndex = currentCategoryIndex - 1;
+      
+      for (let i = 0; i < navItems.length - 1; i++) {
+        if (checkIndex <= 0) checkIndex = navItems.length - 1; // Wrap to end, skip home (0)
+        
+        const prevCategory = navItems[checkIndex].id;
+        const prevCategoryResources = resources
+          .filter(res => res.category.toLowerCase() === prevCategory.toLowerCase())
+          .sort((a, b) => (a.order || 0) - (b.order || 0));
+          
+        if (prevCategoryResources.length > 0) {
+          setActiveCategory(prevCategory as Category);
+          setActiveLesson(prevCategoryResources[prevCategoryResources.length - 1]);
+          prevCategoryFound = true;
+          break;
+        }
+        checkIndex--;
+      }
+      
+      if (!prevCategoryFound) {
+        // Fallback to end of current list
+        setActiveLesson(filteredResources[filteredResources.length - 1]);
+      }
+    }
   };
 
   const currentIndex = activeLesson ? filteredResources.findIndex(r => r.id === activeLesson.id) : -1;
@@ -456,12 +476,7 @@ const App: React.FC = () => {
         </main>
       </div>
 
-      {showInactivityPrompt && (
-        <InactivityPrompt
-          onContinue={handleInactivityContinue}
-          onStop={handleInactivityStop}
-        />
-      )}
+
     </div>
   );
 };

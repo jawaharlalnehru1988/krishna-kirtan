@@ -5,6 +5,7 @@ import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import './globals.css';
 
 export const metadata: Metadata = {
+  manifest: '/manifest.json',
   metadataBase: new URL('https://kirtan.askharekrishna.com'),
   title: 'Sri Krishna Kirtan',
   description: 'Official Sri Krishna Kirtan Music Library - Discover divine kirtans, lyrics, and translations.',

@@ -136,7 +136,20 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
         navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
     }, [playing]);
 
-    const handlePlayPause = () => setPlaying(!playing);
+    const handlePlayPause = () => {
+        if (!playing && audioRef.current) {
+            // If trying to play again and it's currently marked as loading or has an error,
+            // force a reload to re-establish the connection in case it dropped.
+            if (loading || audioRef.current.error) {
+                const ct = audioRef.current.currentTime;
+                audioRef.current.load();
+                if (ct > 0) {
+                    audioRef.current.currentTime = ct;
+                }
+            }
+        }
+        setPlaying(!playing);
+    };
 
     const onTimeUpdate = () => {
         if (!seeking && audioRef.current) {
@@ -262,6 +275,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
                 onError={handleAudioError}
                 onWaiting={() => setLoading(true)}
                 onPlaying={() => setLoading(false)}
+                onCanPlay={() => setLoading(false)}
+                onStalled={() => setLoading(true)}
                 preload="auto"
             />
 
@@ -318,10 +333,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
 
                         <button
                             onClick={handlePlayPause}
-                            className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-600 hover:bg-orange-500 text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-900/40 disabled:opacity-50"
-                            disabled={loading && played === 0}
+                            className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-600 hover:bg-orange-500 text-white rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-xl shadow-orange-900/40"
                         >
-                            {loading && played === 0 ? (
+                            {loading && playing ? (
                                 <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                             ) : playing ? (
                                 <Pause fill="white" size={32} />

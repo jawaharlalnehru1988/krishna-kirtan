@@ -1,0 +1,21 @@
+{
+  "name": "Sri Krishna Kirtan",
+  "short_name": "Krishna Kirtan",
+  "description": "Sri Krishna Kirtan Music Library",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "icons": [
+    {
+      "src": "/lord caitanya.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/lord caitanya.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
