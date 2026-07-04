@@ -1,9 +1,19 @@
-// A very basic Service Worker to satisfy PWA requirements
 self.addEventListener('install', (e) => {
   console.log('[Service Worker] Install');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (e) => {
+  console.log('[Service Worker] Activate');
+  return self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
-  // Do nothing, let the browser handle all fetches normally.
-  // This satisfies the PWA install requirement without interfering with Next.js caching.
+  // A minimal, pass-through fetch handler that satisfies PWA offline requirements
+  e.respondWith(
+    fetch(e.request).catch(() => {
+      // Offline fallback
+      return new Response("Offline mode - some content may not be available.");
+    })
+  );
 });

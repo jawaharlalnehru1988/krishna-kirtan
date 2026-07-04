@@ -149,6 +149,24 @@ const App: React.FC = () => {
       updateTwitterMeta('title', title);
       updateTwitterMeta('description', description);
       updateTwitterMeta('image', image);
+    } else if (activeCategory && activeCategory !== 'home') {
+      const categoryItem = navItems.find(item => item.id.toLowerCase() === activeCategory.toLowerCase());
+      const title = categoryItem?.label || activeCategory;
+      const isTa = selectedLanguage === 'ta';
+      const description = isTa 
+        ? `ஸ்ரீ கிருஷ்ண கீர்த்தனம் - ${title} பகுப்பில் உள்ள தெய்வீக கீர்த்தனைகள், வரிகள் மற்றும் மொழிபெயர்ப்புகளைக் கண்டறியவும்.`
+        : `Sri Krishna Kirtan - Discover divine kirtans, lyrics, and translations in the ${title} category.`;
+      const image = (categoryItem?.image || "/lord caitanya.jpeg").replace(/ /g, '%20');
+
+      document.title = `${title} | Sri Krishna Kirtan`;
+      updateMeta('og:title', title);
+      updateMeta('og:description', description);
+      updateMeta('og:image', image);
+      updateMeta('og:url', window.location.href);
+
+      updateTwitterMeta('title', title);
+      updateTwitterMeta('description', description);
+      updateTwitterMeta('image', image);
     } else {
       const defaultTitle = "Sri Krishna Kirtan - Music Library";
       const defaultDesc = "Discover divine kirtans, lyrics, and translations in multiple languages.";
@@ -164,7 +182,7 @@ const App: React.FC = () => {
       updateTwitterMeta('description', defaultDesc);
       updateTwitterMeta('image', defaultImg);
     }
-  }, [activeLesson]);
+  }, [activeLesson, activeCategory, navItems, selectedLanguage]);
 
   // Playback state persistence across refreshes
   useEffect(() => {

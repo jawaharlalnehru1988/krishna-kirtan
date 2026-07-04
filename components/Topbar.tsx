@@ -46,14 +46,39 @@ const Topbar: React.FC<TopbarProps> = ({
   }, []);
 
   const handleInstallClick = async () => {
+    // 1. Check if already installed & running in standalone mode
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;
+    if (isStandalone) {
+      alert("Sri Krishna Kirtan is already installed and running as a standalone app.");
+      return;
+    }
+
+    // 2. If browser supports programmatic installation (deferredPrompt is set)
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+        }
+      } catch (err) {
+        console.error("Installation prompt failed:", err);
       }
+      return;
+    }
+
+    // 3. Fallbacks when deferredPrompt is not available (e.g. iOS Safari, or manual install)
+    const ua = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+
+    if (isIOS) {
+      alert("To install Sri Krishna Kirtan on iOS:\n1. Open this website in Safari.\n2. Tap the 'Share' button at the bottom of the screen.\n3. Scroll down and select 'Add to Home Screen'.");
+    } else if (isMobile) {
+      alert("To install Sri Krishna Kirtan on Android:\n1. Tap the three dots (menu) in Chrome or your default browser.\n2. Select 'Install app' or 'Add to Home screen'.\n\nIf you don't see this option, the app might already be installed.");
     } else {
-      alert("To install the app on iOS, tap the 'Share' button in Safari and select 'Add to Home Screen'. If you are on Android, the app may already be installed or your browser doesn't support this feature.");
+      // Desktop fallback
+      alert("To install Sri Krishna Kirtan on Desktop:\n1. Click the 'Install' icon in the browser address bar (top right, near the star/bookmark icon).\n2. Or open the browser menu (three dots) and select 'Install Sri Krishna Kirtan'.");
     }
   };
 
