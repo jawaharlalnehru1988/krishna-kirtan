@@ -17,7 +17,7 @@ export async function generateMetadata(
   try {
     // 1. If sharing a specific lesson (song)
     if (lessonId) {
-      const response = await fetch('https://api.askharekrishna.com/api/v1/kirtans/', { next: { revalidate: 3600 } });
+      const response = await fetch('https://api.askharekrishna.com/api/v1/kirtans/', { cache: 'no-store' });
       const kirtans = await response.json();
       const lesson = kirtans.find((k: any) => k.id.toString() === lessonId);
 
@@ -29,7 +29,7 @@ export async function generateMetadata(
         // Find category image as a fallback if lesson doesn't have imagePath
         let categoryImage = '';
         try {
-          const catResponse = await fetch('https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=en', { next: { revalidate: 3600 } });
+          const catResponse = await fetch('https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=en', { cache: 'no-store' });
           const categories = await catResponse.json();
           const categoryObj = categories.find((c: any) => {
             const engTrans = c.translations?.find((t: any) => t.language_code === 'en');
@@ -74,7 +74,7 @@ export async function generateMetadata(
 
     // 2. If sharing a category page
     if (categoryParam) {
-      const catResponse = await fetch(`https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=${lang}`, { next: { revalidate: 3600 } });
+      const catResponse = await fetch(`https://api.askharekrishna.com/api/v1/kirtan-categories/?lang=${lang}`, { cache: 'no-store' });
       const categories = await catResponse.json();
       
       const categoryObj = categories.find((c: any) => {

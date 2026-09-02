@@ -10,6 +10,8 @@ export const LANGUAGE_LABELS: Record<string, { label: string; emoji: string }> =
     ta: { label: 'தமிழ்', emoji: '🕉️' },
     hi: { label: 'हिंदी', emoji: '🚩' },
     kn: { label: 'ಕನ್ನಡ', emoji: '🕉️' },
+    ml: { label: 'മലയാളം', emoji: '🕉️' },
+    bn: { label: 'বাংলা', emoji: '🕉️' },
     te: { label: 'తెలుగు', emoji: '🕉️' },
 };
 

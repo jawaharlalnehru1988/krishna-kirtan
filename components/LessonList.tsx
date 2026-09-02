@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Resource, NavItem } from '../types';
 import { Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getTranslation as getUiTranslation } from '../lib/translations';
 
 interface LessonListProps {
     resources: Resource[];
@@ -10,34 +11,109 @@ interface LessonListProps {
 }
 
 const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLanguage, navItems }) => {
+    const tUi = getUiTranslation(selectedLanguage);
     const getTranslation = (resource: Resource, lang: string) => {
-        return resource.translations.find(t => t.language_code === lang) || 
-               resource.translations.find(t => t.language_code === 'ta') || 
-               resource.translations[0];
+        if (!resource) return null;
+        const translations = resource.translations;
+        if (Array.isArray(translations) && translations.length > 0) {
+            return translations.find(t => t?.language_code === lang) || 
+                   translations.find(t => t?.language_code === 'ta') || 
+                   translations[0] || null;
+        }
+        return {
+            title: resource.title || `Kirtan ${resource.id}`,
+            authorName: resource.authorName || '',
+            description: resource.description || '',
+            lyrics: resource.englishLyrics || resource.tamilLyrics || '',
+        };
     };
+    const getAuthorName = (resource: Resource, lang: string): string => {
+        if (!resource) return 'Traditional';
+        const translations = resource.translations;
+        if (Array.isArray(translations) && translations.length > 0) {
+            const match = translations.find(t => t?.language_code === lang);
+            if (match && match.authorName && match.authorName.trim()) {
+                return match.authorName.trim();
+            }
+            const anyAuth = translations.find(t => t?.authorName && t.authorName.trim());
+            if (anyAuth) return anyAuth.authorName.trim();
+        }
+        return resource.authorName?.trim() || 'Traditional';
+    };
+
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedAuthor, setSelectedAuthor] = useState<string>('all');
     const itemsPerPage = 25;
 
-    const totalPages = Math.ceil(resources.length / itemsPerPage);
-
-    const paginatedResources = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return resources.slice(startIndex, startIndex + itemsPerPage);
-    }, [resources, currentPage]);
-
-    // Reset to page 1 when resources change
+    // Reset author filter & page when category/resources change
     React.useEffect(() => {
+        setSelectedAuthor('all');
         setCurrentPage(1);
     }, [resources]);
 
+    // Extract unique non-empty authors from resources
+    const authors = useMemo(() => {
+        const set = new Set<string>();
+        resources.forEach(resource => {
+            const author = getAuthorName(resource, selectedLanguage);
+            if (author) set.add(author);
+        });
+        return Array.from(set).sort();
+    }, [resources, selectedLanguage]);
+
+    // Filter resources by selected author
+    const filteredResources = useMemo(() => {
+        if (!selectedAuthor || selectedAuthor === 'all') return resources;
+        return resources.filter(resource => {
+            const author = getAuthorName(resource, selectedLanguage);
+            return author === selectedAuthor;
+        });
+    }, [resources, selectedAuthor, selectedLanguage]);
+
+    const totalPages = Math.ceil(filteredResources.length / itemsPerPage);
+
+    const paginatedResources = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredResources.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredResources, currentPage]);
+
     return (
         <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-800 overflow-hidden transition-colors duration-300">
-            {/* Header info */}
-            <div className="p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50 flex justify-between items-center px-6">
-                <span className="text-sm font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">Audio List</span>
-                <span className="text-sm text-stone-500 dark:text-stone-400 font-medium">
-                    Showing {resources.length} Kirtans
-                </span>
+            {/* Header info & Author Filter */}
+            <div className="p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider">{tUi.nav.exploreSongs}</span>
+                    <span className="text-sm text-stone-500 dark:text-stone-400 font-medium">
+                        ({filteredResources.length})
+                    </span>
+                </div>
+
+                {/* Author Filter Dropdown - Always visible */}
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider flex items-center gap-1">
+                        👤 {tUi.nav.author}:
+                    </span>
+                    <select
+                        value={selectedAuthor}
+                        onChange={(e) => {
+                            setSelectedAuthor(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all shadow-sm cursor-pointer min-w-[180px]"
+                    >
+                        <option value="all">
+                            {selectedLanguage === 'ta' ? 'அனைத்து ஆசிரியர்கள்' : selectedLanguage === 'hi' ? 'सभी रचयिता' : selectedLanguage === 'kn' ? 'ಎಲ್ಲಾ ರಚನೆಕಾರರು' : selectedLanguage === 'ml' ? 'എല്ലാ രചയിതാക്കളും' : selectedLanguage === 'bn' ? 'সকল রচয়িতা' : selectedLanguage === 'te' ? 'అందరు రచయితలు' : 'All Authors'} ({resources.length})
+                        </option>
+                        {authors.map((author) => {
+                            const count = resources.filter(r => getAuthorName(r, selectedLanguage) === author).length;
+                            return (
+                                <option key={author} value={author}>
+                                    {author} ({count})
+                                </option>
+                            );
+                        })}
+                    </select>
+                </div>
             </div>
 
             {/* List */}
@@ -52,7 +128,7 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLang
                             <div className="flex items-center gap-5">
                                 <div className="w-14 h-14 rounded-xl bg-stone-100 dark:bg-stone-800 flex-shrink-0 overflow-hidden relative border border-stone-200 dark:border-stone-700 shadow-sm transition-transform group-hover:scale-105">
                                     <img
-                                        src={resource.imagePath || navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.image || '/lord caitanya.jpeg'}
+                                        src={resource.imagePath || navItems.find(item => item?.id?.toLowerCase() === (resource.category || '').toLowerCase())?.image || '/lord caitanya.jpeg'}
                                         alt={getTranslation(resource, selectedLanguage)?.title}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
@@ -69,7 +145,7 @@ const LessonList: React.FC<LessonListProps> = ({ resources, onView, selectedLang
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-tighter bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded">
-                                            {navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.label || resource.category}
+                                            {navItems.find(item => item?.id?.toLowerCase() === (resource.category || '').toLowerCase())?.label || resource.category || ''}
                                         </span>
                                         {getTranslation(resource, selectedLanguage)?.authorName && (
                                             <span className="text-xs text-stone-400 dark:text-stone-500 font-medium">

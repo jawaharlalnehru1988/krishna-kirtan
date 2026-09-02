@@ -7,6 +7,7 @@ import { Resource, NavItem } from '../types';
 import AudioPlayer from './AudioPlayer';
 import TranslationsSection from './TranslationsSection';
 import { generatePdf } from '../utils/pdfExport';
+import { getTranslation } from '../lib/translations';
 
 interface LessonDetailProps {
     resource: Resource;
@@ -33,22 +34,29 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
     selectedLanguage,
     navItems
 }) => {
+    const t = getTranslation(selectedLanguage);
     const [activeLang, setActiveLang] = useState<string>(selectedLanguage);
     const [showCopied, setShowCopied] = useState(false);
-    const activeTranslation = resource.translations.find(t => t.language_code === activeLang) || resource.translations[0];
+    const translations = resource?.translations || [];
+    const activeTranslation = translations.find(t => t?.language_code === activeLang) || translations[0] || {
+        title: resource?.title || '',
+        authorName: resource?.authorName || '',
+        description: resource?.description || '',
+        lyrics: resource?.englishLyrics || resource?.tamilLyrics || '',
+    };
 
     // Sync activeLang with selectedLanguage if user hasn't manually switched in this view
     React.useEffect(() => {
-        if (resource.translations.some(t => t.language_code === selectedLanguage)) {
+        if (translations.some(t => t?.language_code === selectedLanguage)) {
             setActiveLang(selectedLanguage);
         }
-    }, [selectedLanguage, resource]);
+    }, [selectedLanguage, resource, translations]);
 
     // Update document metadata for social sharing previews
     React.useEffect(() => {
-        const title = activeTranslation?.title || resource.title;
-        const description = activeTranslation?.description || resource.description || 'Discover divine kirtans, lyrics, and translations.';
-        const categoryItem = navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase());
+        const title = activeTranslation?.title || resource?.title || '';
+        const description = activeTranslation?.description || resource?.description || 'Discover divine kirtans, lyrics, and translations.';
+        const categoryItem = navItems.find(item => item?.id?.toLowerCase() === (resource?.category || '').toLowerCase());
         const rawImagePath = resource.imagePath || categoryItem?.image;
         const imageUrl = rawImagePath 
             ? (rawImagePath.startsWith('http') ? rawImagePath : window.location.origin + rawImagePath) 
@@ -88,9 +96,9 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
         };
 
         // Attempt to include image file for better WhatsApp/Social previews if supported
-        if (resource.imagePath && navigator.canShare) {
+        if (resource?.imagePath && navigator.canShare) {
             try {
-                const rawImagePath = resource.imagePath || navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.image;
+                const rawImagePath = resource.imagePath || navItems.find(item => (item?.id || '').toString().toLowerCase() === (resource?.category || '').toString().toLowerCase())?.image;
                 const imageUrl = (rawImagePath && rawImagePath.startsWith('http')) 
                     ? rawImagePath 
                     : window.location.origin + (rawImagePath || '/lord caitanya.jpeg');
@@ -134,7 +142,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                     onClick={onBack}
                     className="flex items-center gap-2 text-stone-600 dark:text-stone-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium group"
                 >
-                    <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to Library
+                    <span className="group-hover:-translate-x-1 transition-transform">←</span> {t.nav.backToLibrary}
                 </button>
 
                 <div className="flex items-center gap-3">
@@ -142,7 +150,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                         onClick={onPrevious}
                         disabled={!hasPrevious}
                         className="p-2 rounded-full border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900 hover:text-orange-600 dark:hover:text-orange-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                        title="Previous Lesson"
+                        title={t.nav.previousLesson}
                     >
                         <ChevronLeft size={20} />
                     </button>
@@ -150,7 +158,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                         onClick={onNext}
                         disabled={!hasNext}
                         className="p-2 rounded-full border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900 hover:text-orange-600 dark:hover:text-orange-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                        title="Next Lesson"
+                        title={t.nav.nextLesson}
                     >
                         <ChevronRight size={20} />
                     </button>
@@ -162,8 +170,8 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
 
                     {/* Main Media Section */}
                     {(() => {
-                        const categoryItem = navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase());
-                        const displayImage = resource.imagePath || categoryItem?.image;
+                        const categoryItem = navItems.find(item => (item?.id || '').toString().toLowerCase() === (resource?.category || '').toString().toLowerCase());
+                        const displayImage = resource?.imagePath || categoryItem?.image;
                         
                         if (resource.videoPath) {
                             return (
@@ -246,7 +254,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                             <div>
                                 <div className="flex items-center gap-3 mb-3">
                                     <span className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                                        {navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.label || resource.category}
+                                        {navItems.find(item => (item?.id || '').toString().toLowerCase() === (resource?.category || '').toString().toLowerCase())?.label || resource?.category}
                                     </span>
                                 </div>
 
@@ -289,7 +297,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                         className="flex-1 flex items-center justify-center gap-4 py-5 px-8 bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-900 dark:text-orange-400 rounded-[1.5rem] font-bold transition-all duration-300 group border border-orange-200 dark:border-orange-800/40 hover:shadow-lg hover:scale-[1.01]"
                                     >
                                         <FileDown size={22} className="group-hover:-translate-y-1 transition-transform duration-300" />
-                                        <span className="text-lg">Download as PDF</span>
+                                        <span className="text-lg">{t.nav.downloadPdf}</span>
                                     </button>
 
                                     <button
@@ -298,7 +306,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     >
                                         <Share2 size={22} className="group-hover:rotate-12 transition-transform duration-300" />
                                         <span className="text-lg">
-                                            {showCopied ? 'Link Copied!' : 'Share Lyrics'}
+                                            {showCopied ? t.nav.copied : t.nav.share}
                                         </span>
                                     </button>
                                 </div>
@@ -324,7 +332,7 @@ const LessonDetail: React.FC<LessonDetailProps> = ({
                                     <div>
                                         <span className="text-xs text-stone-500 dark:text-stone-400 uppercase font-bold block mb-1">Category</span>
                                         <p className="font-medium text-stone-800 dark:text-stone-200 capitalize">
-                                            {navItems.find(item => item.id.toLowerCase() === resource.category.toLowerCase())?.label || resource.category}
+                                            {navItems.find(item => (item?.id || '').toString().toLowerCase() === (resource?.category || '').toString().toLowerCase())?.label || resource?.category}
                                         </p>
                                     </div>
 

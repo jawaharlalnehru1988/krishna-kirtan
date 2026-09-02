@@ -1,6 +1,7 @@
 import React from 'react';
 import { Category, NavItem } from '../types';
 import OtherWebsites from './OtherWebsites';
+import { getTranslation } from '../lib/translations';
 
 interface HomeViewProps {
   onStart: (category: Category) => void;
@@ -10,67 +11,8 @@ interface HomeViewProps {
 
 const HIDE_OTHER_SITES = true;
 
-const TRANSLATIONS: Record<string, any> = {
-  en: {
-    hero: {
-      title: 'Sri Krishna Kirtan',
-      subtitle: '"Kirtan is the call of the soul for the Supreme Soul."',
-      startBtn: 'Start Listening',
-      exploreBtn: 'Explore Library',
-    },
-    about: {
-      badge: 'Divine Inspiration',
-      heading: 'Teachings and Kirtans of His Divine Grace',
-      quote: '"Simply by chanting this holy name of Hari, one can become free from all the reactions of sinful life. This kirtan movement is the only way to realize God in this age."',
-      description: 'Our library is dedicated to preserving the divine kirtans, bhajans, and prayers shared by A.C. Bhaktivedanta Swami Prabhupada and His Sincere followers. Immerse yourself in the transcendental sound vibration and discover the peace of devotional service through hearing.',
-      author: 'Srila Prabhupada',
-      authorTitle: 'Founder-Acharya of ISKCON',
-    },
-    categories: {
-      heading: 'Immersion in Sound',
-      subtitle: 'Select a category to explore our extensive collection of kirtans, bhajans, and spiritual discourses.',
-      startLink: 'Start Listening ➔',
-    },
-    categoryFallback: {
-      kirtan: 'Congregational chanting of the Holy Names. Experience the ecstasy of Sankirtana.',
-      bhajan: 'Devotional songs and prayers that touch the heart and awaken the soul.',
-      prayer: 'Sacred mantras and appeals for divine grace and guidance.',
-      raga: 'Traditional melodies that set the mood for deep meditation and worship.',
-      default: 'Explore our collection of devotional kirtans, bhajans, and prayers.'
-    }
-  },
-  ta: {
-    hero: {
-      title: 'ஸ்ரீ கிருஷ்ண கீர்த்தனம்',
-      subtitle: '"கீர்த்தனை என்பது பரமாத்மாவை நோக்கிய ஆத்மாவின் அழைப்பு."',
-      startBtn: 'கேட்கத் தொடங்குங்கள்',
-      exploreBtn: 'நூலகத்தை ஆராயுங்கள்',
-    },
-    about: {
-      badge: 'தெய்வீக பொன்மொழிகள்',
-      heading: 'ஸ்ரீல பிரபுபாதரின் போதனைகள் மற்றும் கீர்த்தனைகள்',
-      quote: '"ஹரியின் இந்த திருநாமத்தை உச்சரிப்பதன் மூலம், பாவ வாழ்வின் அனைத்து விளைவுகளிலிருந்தும் விடுபடலாம். இந்த யுகத்தில் கடவுளை உணர்வதற்கு இந்த கீர்த்தனை இயக்கம் மட்டுமே வழி."',
-      description: 'தெய்வத்திரு ஏ.சி. பக்திவேதாந்த சுவாமி பிரபுபாதர் மற்றும் அவரது சீடர்களால் பகிரப்பட்ட தெய்வீக கீர்த்தனைகள், பஜனைகள் மற்றும் பிரார்த்தனைகளைப் பாதுகாப்பதில் அர்ப்பணிக்கப்பட்டுள்ளது. ஆன்மீக ஒலி அதிர்வுகளில் மூழ்கி, இதனை கேட்பதன் மூலம் பக்தி சேவையின் அமைதியைக் கண்டறியுங்கள்.',
-      author: 'ஸ்ரீல பிரபுபாதா',
-      authorTitle: 'இஸ்கான் நிறுவனர்-ஆச்சார்யா',
-    },
-    categories: {
-      heading: 'ஆன்மீக ஒலியில் மூழ்குதல்',
-      subtitle: 'கீர்த்தனைகள், பஜனைகள் மற்றும் ஆன்மீக உரைகளின் விரிவான தொகுப்பை ஆராய ஒரு வகையைத் தேர்ந்தெடுக்கவும்.',
-      startLink: 'கேட்கத் தொடங்குங்கள் ➔',
-    },
-    categoryFallback: {
-      kirtan: 'திருநாமங்களின் சங்கீர்த்தனம். சங்கீர்த்தனத்தின் பேரின்பத்தை அனுபவியுங்கள்.',
-      bhajan: 'இதயத்தைத் தொடும் மற்றும் ஆத்மாவை விழிப்படையச் செய்யும் பக்தி பாடல்கள் மற்றும் பிரார்த்தனைகள்.',
-      prayer: 'தெய்வீக அருள் மற்றும் வழிகாட்டுதலுக்கான புனித மந்திரங்கள் மற்றும் விண்ணப்பங்கள்.',
-      raga: 'ஆழ்ந்த தியானம் மற்றும் வழிபாட்டிற்கான மனநிலையை அமைக்கும் பாரம்பரிய ராகங்கள்.',
-      default: 'பக்தி கீர்த்தனைகள், பஜனைகள் மற்றும் பிரார்த்தனைகளின் தொகுப்பை ஆராயுங்கள்.'
-    }
-  }
-};
-
 const HomeView: React.FC<HomeViewProps> = ({ onStart, categories, selectedLanguage }) => {
-  const t = TRANSLATIONS[selectedLanguage] || TRANSLATIONS.ta;
+  const t = getTranslation(selectedLanguage);
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -195,7 +137,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onStart, categories, selectedLangua
 
                   <h3 className="text-2xl font-bold text-white mb-2 capitalize">{cat.label}</h3>
                   <p className="text-stone-300 text-sm mb-6 line-clamp-2 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                    {t.categoryFallback[cat.id.toLowerCase()] || t.categoryFallback.default}
+                    {t.categoryFallback[(cat?.id || '').toString().toLowerCase()] || t.categoryFallback.default}
                   </p>
                   <span className="text-orange-400 font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
                     {t.categories.startLink}

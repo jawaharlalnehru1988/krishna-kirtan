@@ -1,18 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import axios from 'axios';
-import { Category, Resource, NavItem } from './types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Category, Resource } from './types';
 import LessonList from './components/LessonList';
 import LessonDetail from './components/LessonDetail';
 import HomeView from './components/HomeView';
-
-import { Menu, X } from 'lucide-react';
-import { CATEGORY_ICONS } from './constants';
 import Topbar from './components/Topbar';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Footer from './components/Footer';
+
+// Custom Hooks
+import { useKirtanData } from './hooks/useKirtanData';
+import { useUrlSync } from './hooks/useUrlSync';
+import { useDynamicMetadata } from './hooks/useDynamicMetadata';
+import { useLessonNavigation } from './hooks/useLessonNavigation';
 
 const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<Category>(() => {
@@ -20,29 +22,24 @@ const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     return (params.get('category') as Category) || 'home';
   });
+  
   const [activeLesson, setActiveLesson] = useState<Resource | null>(null);
-  const [resources, setResources] = useState<Resource[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const cached = localStorage.getItem('kirtan_resources');
-    return cached ? JSON.parse(cached) : [];
-  });
-  const [navItems, setNavItems] = useState<NavItem[]>([]);
-  const [navItemsCache, setNavItemsCache] = useState<Record<string, NavItem[]>>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  
   const [isPlaying, setIsPlaying] = useState(() => {
     if (typeof window === 'undefined') return false;
     const storedPlayState = sessionStorage.getItem('kirtan_isPlaying');
     return storedPlayState === 'true';
   });
+  
   const [isHydrated, setIsHydrated] = useState(false);
+  
   const [selectedLanguage, setSelectedLanguage] = useState<string>(() => {
-    if (typeof window === 'undefined') return 'ta';
+    if (typeof window === 'undefined') return 'en';
     const params = new URLSearchParams(window.location.search);
-    return params.get('lang') || 'ta';
+    return params.get('lang') || 'en';
   });
 
   const hasLessonInUrl = useMemo(() => {
@@ -63,314 +60,59 @@ const App: React.FC = () => {
     }
   }, [theme]);
 
-  // Sync state FROM URL on initial load and popstate
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const category = params.get('category') as Category || 'home';
-      const lessonId = params.get('lesson');
-      const lang = params.get('lang');
-
-      setActiveCategory(category);
-      if (lang) setSelectedLanguage(lang);
-
-      if (lessonId && resources.length > 0) {
-        const lesson = resources.find(r => r.id.toString() === lessonId);
-        setActiveLesson(lesson || null);
-      } else {
-        setActiveLesson(null);
-      }
-    };
-
-    // Initial sync once resources are loaded
-    if (!loading && resources.length > 0) {
-      handlePopState();
-    }
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [loading, resources]);
-
-  // Sync state TO URL
-  useEffect(() => {
-    if (loading) return;
-
-    const params = new URLSearchParams();
-    if (activeCategory !== 'home') {
-      params.set('category', activeCategory);
-    }
-    if (activeLesson) {
-      params.set('lesson', activeLesson.id.toString());
-    }
-    if (selectedLanguage !== 'ta') {
-      params.set('lang', selectedLanguage);
-    }
-
-    const newSearch = params.toString() ? `?${params.toString()}` : '';
-    if (window.location.search !== newSearch) {
-      window.history.pushState(null, '', window.location.pathname + newSearch);
-    }
-  }, [activeCategory, activeLesson, selectedLanguage, loading]);
-
-  // Dynamic Metadata Sync
-  useEffect(() => {
-    const updateMeta = (property: string, content: string) => {
-      let meta = document.querySelector(`meta[property="${property}"]`);
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('property', property);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', content);
-    };
-
-    const updateTwitterMeta = (name: string, content: string) => {
-      let meta = document.querySelector(`meta[property="twitter:${name}"], meta[name="twitter:${name}"]`);
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('name', `twitter:${name}`);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', content);
-    };
-
-    if (activeLesson) {
-      const title = activeLesson.title;
-      const description = activeLesson.description || "Sri Krishna Kirtan Music Library";
-      const categoryItem = navItems.find(item => item.id.toLowerCase() === activeLesson.category.toLowerCase());
-      const image = (activeLesson.imagePath || categoryItem?.image || "/lord caitanya.jpeg").replace(/ /g, '%20');
-
-      document.title = `${title} | Sri Krishna Kirtan`;
-      updateMeta('og:title', title);
-      updateMeta('og:description', description);
-      updateMeta('og:image', image);
-      updateMeta('og:url', window.location.href);
-
-      updateTwitterMeta('title', title);
-      updateTwitterMeta('description', description);
-      updateTwitterMeta('image', image);
-    } else if (activeCategory && activeCategory !== 'home') {
-      const categoryItem = navItems.find(item => item.id.toLowerCase() === activeCategory.toLowerCase());
-      const title = categoryItem?.label || activeCategory;
-      const isTa = selectedLanguage === 'ta';
-      const description = isTa 
-        ? `ஸ்ரீ கிருஷ்ண கீர்த்தனம் - ${title} பகுப்பில் உள்ள தெய்வீக கீர்த்தனைகள், வரிகள் மற்றும் மொழிபெயர்ப்புகளைக் கண்டறியவும்.`
-        : `Sri Krishna Kirtan - Discover divine kirtans, lyrics, and translations in the ${title} category.`;
-      const image = (categoryItem?.image || "/lord caitanya.jpeg").replace(/ /g, '%20');
-
-      document.title = `${title} | Sri Krishna Kirtan`;
-      updateMeta('og:title', title);
-      updateMeta('og:description', description);
-      updateMeta('og:image', image);
-      updateMeta('og:url', window.location.href);
-
-      updateTwitterMeta('title', title);
-      updateTwitterMeta('description', description);
-      updateTwitterMeta('image', image);
-    } else {
-      const defaultTitle = "Sri Krishna Kirtan - Music Library";
-      const defaultDesc = "Discover divine kirtans, lyrics, and translations in multiple languages.";
-      const defaultImg = "/lord caitanya.jpeg".replace(/ /g, '%20');
-
-      document.title = "Sri Krishna Kirtan";
-      updateMeta('og:title', defaultTitle);
-      updateMeta('og:description', defaultDesc);
-      updateMeta('og:image', defaultImg);
-      updateMeta('og:url', window.location.origin);
-
-      updateTwitterMeta('title', defaultTitle);
-      updateTwitterMeta('description', defaultDesc);
-      updateTwitterMeta('image', defaultImg);
-    }
-  }, [activeLesson, activeCategory, navItems, selectedLanguage]);
-
   // Playback state persistence across refreshes
   useEffect(() => {
     sessionStorage.setItem('kirtan_isPlaying', isPlaying.toString());
   }, [isPlaying]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      // Hydrate from cache immediately if available
-      if (resources.length > 0) {
-        setLoading(false);
-      }
+  // Data Fetching Hook
+  const { resources, navItems, loading, error } = useKirtanData(selectedLanguage);
 
-      try {
-        const kirtansResponse = await axios.get('/api/kirtans');
-        const kirtansData = kirtansResponse.data;
+  // URL Sync Hook
+  useUrlSync({
+    loading,
+    resources,
+    activeCategory,
+    setActiveCategory,
+    activeLesson,
+    setActiveLesson,
+    selectedLanguage,
+    setSelectedLanguage,
+  });
 
-        // Transform API data to Resource type
-        const fetchedResources: Resource[] = kirtansData.map((item: any) => {
-          const translations = item.translations || [];
-          const enTranslation = translations.find((t: any) => t.language_code === 'en') || translations[0];
-          const taTranslation = translations.find((t: any) => t.language_code === 'ta');
-
-          return {
-            id: item.id,
-            category: item.category,
-            audioPath: item.audioPath,
-            imagePath: item.imagePath || item.image || item.categoryImage || null,
-            videoPath: item.videoPath,
-            translations: translations,
-            created_at: item.created_at,
-            updated_at: item.updated_at,
-            // Flattened fields for UI components
-            title: enTranslation?.title || `Kirtan ${item.id}`,
-            authorName: enTranslation?.authorName || '',
-            description: enTranslation?.description || '',
-            tamilLyrics: taTranslation?.lyrics || '',
-            englishLyrics: enTranslation?.lyrics || '',
-            order: item.order || 0
-          };
-        });
-
-        setResources(fetchedResources);
-        localStorage.setItem('kirtan_resources', JSON.stringify(fetchedResources));
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to fetch kirtans:", err);
-        setError("Failed to load content. Please try again later.");
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Fetch localized categories whenever language changes (with caching)
-  useEffect(() => {
-    const fetchCategories = async () => {
-      // Check in-memory cache first
-      if (navItemsCache[selectedLanguage]) {
-        setNavItems(navItemsCache[selectedLanguage]);
-        return;
-      }
-
-      try {
-        const response = await axios.get(`/api/kirtan-categories?lang=${selectedLanguage}`);
-        const categoriesData = response.data;
-
-        // Transform API data to NavItem type with localized labels
-        const dynamicNavItems: NavItem[] = [
-          { id: 'home', label: selectedLanguage === 'ta' ? 'முகப்பு' : 'Home', icon: '🏠' },
-          ...categoriesData.map((cat: any) => {
-            // Find stable English name for internal logic (ID and Icons)
-            const englishTranslation = cat.translations?.find((t: any) => t.language_code === 'en');
-            const stableId = englishTranslation?.name || (selectedLanguage === 'en' ? cat.name : cat.id.toString());
-            
-            return {
-              id: stableId,
-              label: cat.name, // Localized name from API
-              image: cat.categoryImage,
-              icon: CATEGORY_ICONS[stableId.toLowerCase()] || CATEGORY_ICONS['default']
-            };
-          })
-        ];
-
-        setNavItems(dynamicNavItems);
-        setNavItemsCache(prev => ({ ...prev, [selectedLanguage]: dynamicNavItems }));
-      } catch (err) {
-        console.error("Failed to fetch localized categories:", err);
-      }
-    };
-
-    fetchCategories();
-  }, [selectedLanguage]);
+  // Dynamic Metadata Hook
+  useDynamicMetadata({
+    activeLesson,
+    activeCategory,
+    navItems,
+    selectedLanguage,
+  });
 
   const filteredResources = useMemo(() => {
     return resources
       .filter(res =>
-        res.category.toLowerCase() === activeCategory.toLowerCase() &&
-        (res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          res.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          res.tamilLyrics.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          res.englishLyrics.toLowerCase().includes(searchQuery.toLowerCase()))
+        res &&
+        (res.category || '').toLowerCase() === (activeCategory || '').toLowerCase() &&
+        (((res.title || '').toLowerCase().includes((searchQuery || '').toLowerCase())) ||
+          ((res.description || '').toLowerCase().includes((searchQuery || '').toLowerCase())) ||
+          ((res.tamilLyrics || '').toLowerCase().includes((searchQuery || '').toLowerCase())) ||
+          ((res.englishLyrics || '').toLowerCase().includes((searchQuery || '').toLowerCase())))
       )
       .sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [activeCategory, searchQuery, resources]);
 
-
   const activeNavItem = navItems.find(item => item.id === activeCategory);
 
-  const handleNextLesson = () => {
-    if (!activeLesson || filteredResources.length === 0) return;
-    const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
-    
-    if (currentIndex < filteredResources.length - 1) {
-      // Go to next lesson in current category
-      setActiveLesson(filteredResources[currentIndex + 1]);
-    } else {
-      // Reached the end of the current category. Find the next category with resources.
-      const currentCategoryIndex = navItems.findIndex(item => item.id === activeCategory);
-      let nextCategoryFound = false;
-      let checkIndex = currentCategoryIndex + 1;
-      
-      for (let i = 0; i < navItems.length - 1; i++) {
-        if (checkIndex >= navItems.length) checkIndex = 1; // Wrap to 1 (skip home)
-        if (checkIndex === 0) checkIndex = 1;
-        
-        const nextCategory = navItems[checkIndex].id;
-        const nextCategoryResources = resources
-          .filter(res => res.category.toLowerCase() === nextCategory.toLowerCase())
-          .sort((a, b) => (a.order || 0) - (b.order || 0));
-          
-        if (nextCategoryResources.length > 0) {
-          setActiveCategory(nextCategory as Category);
-          setActiveLesson(nextCategoryResources[0]);
-          nextCategoryFound = true;
-          break;
-        }
-        checkIndex++;
-      }
-      
-      if (!nextCategoryFound) {
-        // Fallback to start of current list if no other categories have items
-        setActiveLesson(filteredResources[0]);
-      }
-    }
-  };
-
-  const handlePreviousLesson = () => {
-    if (!activeLesson || filteredResources.length === 0) return;
-    const currentIndex = filteredResources.findIndex(r => r.id === activeLesson.id);
-    
-    if (currentIndex > 0) {
-      // Go to previous lesson in current category
-      setActiveLesson(filteredResources[currentIndex - 1]);
-    } else {
-      // Go to previous category's LAST lesson
-      const currentCategoryIndex = navItems.findIndex(item => item.id === activeCategory);
-      let prevCategoryFound = false;
-      let checkIndex = currentCategoryIndex - 1;
-      
-      for (let i = 0; i < navItems.length - 1; i++) {
-        if (checkIndex <= 0) checkIndex = navItems.length - 1; // Wrap to end, skip home (0)
-        
-        const prevCategory = navItems[checkIndex].id;
-        const prevCategoryResources = resources
-          .filter(res => res.category.toLowerCase() === prevCategory.toLowerCase())
-          .sort((a, b) => (a.order || 0) - (b.order || 0));
-          
-        if (prevCategoryResources.length > 0) {
-          setActiveCategory(prevCategory as Category);
-          setActiveLesson(prevCategoryResources[prevCategoryResources.length - 1]);
-          prevCategoryFound = true;
-          break;
-        }
-        checkIndex--;
-      }
-      
-      if (!prevCategoryFound) {
-        // Fallback to end of current list
-        setActiveLesson(filteredResources[filteredResources.length - 1]);
-      }
-    }
-  };
-
-  const currentIndex = activeLesson ? filteredResources.findIndex(r => r.id === activeLesson.id) : -1;
-  const hasNext = filteredResources.length > 1;
-  const hasPrevious = filteredResources.length > 1;
+  // Navigation Hook
+  const { handleNextLesson, handlePreviousLesson, hasNext, hasPrevious } = useLessonNavigation({
+    activeLesson,
+    activeCategory,
+    filteredResources,
+    resources,
+    navItems,
+    setActiveLesson,
+    setActiveCategory,
+  });
 
   const handleLessonView = (resource: Resource) => {
     setActiveLesson(resource);
@@ -454,6 +196,7 @@ const App: React.FC = () => {
               title={activeNavItem?.label || ''}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              selectedLanguage={selectedLanguage}
             />
 
             <section className="p-6">
@@ -490,7 +233,7 @@ const App: React.FC = () => {
 
 
         {/* Footer */}
-        {!activeLesson && <Footer />}
+        {!activeLesson && <Footer selectedLanguage={selectedLanguage} />}
         </main>
       </div>
 
@@ -500,4 +243,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-

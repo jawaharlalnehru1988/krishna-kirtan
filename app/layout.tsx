@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import Script from 'next/script';
 import GoogleAnalytics from '../components/GoogleAnalytics';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import './globals.css';
@@ -28,6 +29,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { AuthProvider } from '../components/AuthProvider';
+import { GoogleAuthProvider } from '../components/providers/GoogleAuthProvider';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,11 +46,21 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-stone-50 text-stone-900">
-        {children}
+        <GoogleAuthProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </GoogleAuthProvider>
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>
         <FloatingWhatsApp />
+        <Script 
+          async 
+          src="https://analytics.askharekrishna.com/script.js" 
+          data-website-id="c90221b7-9a4b-415a-97fa-56696659129b" 
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

@@ -29,19 +29,23 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title, onEnded, onNext, 
     useEffect(() => {
         if (!url || !audioRef.current) return;
         
-        const savedTime = localStorage.getItem(`audio_pos_${url}`);
-        if (savedTime) {
-            const time = parseFloat(savedTime);
-            // Only restore if not at the very end (within 5 seconds) to prevent immediate skipping
-            const audio = audioRef.current;
-            if (audio && (isNaN(audio.duration) || time < audio.duration - 5)) {
-                audio.currentTime = time;
-            } else if (audio && !isNaN(audio.duration)) {
-                audio.currentTime = 0;
-            } else {
-                // If duration unknown yet, we'll check again in loadedmetadata
-                audio.currentTime = time;
+        try {
+            const savedTime = localStorage.getItem(`audio_pos_${url}`);
+            if (savedTime) {
+                const time = parseFloat(savedTime);
+                // Only restore if not at the very end (within 5 seconds) to prevent immediate skipping
+                const audio = audioRef.current;
+                if (audio && (isNaN(audio.duration) || time < audio.duration - 5)) {
+                    audio.currentTime = time;
+                } else if (audio && !isNaN(audio.duration)) {
+                    audio.currentTime = 0;
+                } else {
+                    // If duration unknown yet, we'll check again in loadedmetadata
+                    audio.currentTime = time;
+                }
             }
+        } catch (e) {
+            console.warn("Could not read audio position from localStorage:", e);
         }
     }, [url]);
 
